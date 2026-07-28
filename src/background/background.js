@@ -7,7 +7,7 @@
 // Auth OAuth2 + détection format + dossier Drive + upload résumable chunké
 // ============================================================
 
-import { FOLDER_NAME, MIME_MAP, initI18n, t, getFileNameFromUrl } from "../shared/utils.js";
+import { FOLDER_NAME, MIME_MAP, initI18n, t, getFileNameFromUrl, resolveDownloadUrl } from "../shared/utils.js";
 
 // ----------------------------------------------------------
 // CONSTANTES
@@ -309,8 +309,9 @@ async function parseAndThrowDriveError(res) {
  * @returns {Promise<Object>} { supported, fileName, mimeType, reason? }
  */
 async function detectFileFromTab(tab) {
-  const url = tab.url || "";
+  const rawUrl = tab.url || "";
   const title = tab.title || "";
+  const url = resolveDownloadUrl(rawUrl);
 
   // Blocage fichiers locaux — définitif
   if (url.startsWith("file://")) {
@@ -535,6 +536,7 @@ function notifyPopup(phase, percent, bytesTransferred = 0, totalBytes = 0) {
  * @returns {Promise<Blob>} Le contenu du fichier sous forme de Blob
  */
 async function downloadFileWithProgress(url, expectedMimeType, tabId, uploadState, retries = 3, delay = 2000) {
+  const targetUrl = resolveDownloadUrl(url);
   const controller = new AbortController();
   uploadState.controller = controller;
 
@@ -542,7 +544,7 @@ async function downloadFileWithProgress(url, expectedMimeType, tabId, uploadStat
   const downloadTimeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
 
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(targetUrl, { signal: controller.signal });
     if (!res.ok) {
       const status = res.status;
       // Réessayer uniquement si c'est une erreur réseau temporaire (429, 5xx)
@@ -588,7 +590,8 @@ async function downloadFileWithProgress(url, expectedMimeType, tabId, uploadStat
         throw new Error("FILE_TOO_LARGE");
       }
 
-      const percent = totalSize ? Math.round((receivedLength / totalSize) * 100) : 0;
+      const rawPercent = totalSize ? Math.round((receivedLength / totalSize) * 100) : 0;
+      const percent = Math.min(100, Math.max(0, rawPercent));
       uploadState.percent = percent;
       uploadState.bytesUploaded = receivedLength;
       uploadState.totalSize = totalSize;

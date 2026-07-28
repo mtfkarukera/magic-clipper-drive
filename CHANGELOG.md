@@ -5,6 +5,18 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.13.0] — 2026-07-28
+
+### Ajouté
+- Résolution automatique des URLs de fichiers bruts GitHub (`/blob/` -> `raw.githubusercontent.com`).
+- Intégration du kit d'icônes officielles transparentes multi-résolutions (`icon-16.png` à `icon.png` 512px).
+- Audit complet de code (Sécurité 19/20, Accessibilité 18.5/20, Robustesse 15/20, Design 17/20).
+
+### Corrigé / Amélioré
+- Correction du calcul du pourcentage de progression (plafonnement strict à 100% max) neutralisant les décalages d'octets provoqués par la décompression HTTP GZIP.
+- Gestion fluide du clavier pour la modale d'onboarding (fermeture avec la touche Échap sans fermer la popup).
+- Nettoyage des règles CSS sur le logo pour éliminer tout arrière-plan parasite et afficher la silhouette trapézoïdale de marque avec une netteté cristalline.
+
 ## [1.12.0] — 2026-06-24
 
 ### Ajouté

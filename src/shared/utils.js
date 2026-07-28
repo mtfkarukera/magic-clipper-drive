@@ -141,3 +141,29 @@ export function getFileNameFromUrl(url, title) {
 
   return "file";
 }
+
+/**
+ * Convertit une URL de consultation de fichier GitHub (/blob/) en son URL brute (raw.githubusercontent.com).
+ * @param {string} urlStr - URL d'origine
+ * @returns {string} L'URL brute si GitHub blob, sinon l'URL d'origine
+ */
+export function resolveDownloadUrl(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    if (url.hostname === "github.com" || url.hostname === "www.github.com") {
+      const parts = url.pathname.split("/").filter(Boolean);
+      // Format GitHub : /[owner]/[repo]/blob/[ref]/[...filePath]
+      if (parts.length >= 4 && parts[2] === "blob") {
+        const owner = parts[0];
+        const repo = parts[1];
+        const ref = parts[3];
+        const filePath = parts.slice(4).join("/");
+        return `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${filePath}`;
+      }
+    }
+  } catch (e) {
+    // Ignorer si URL invalide
+  }
+  return urlStr;
+}
+

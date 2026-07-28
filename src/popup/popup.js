@@ -99,10 +99,12 @@ function setTransferState(phase, percent, bytesTransferred = 0, totalBytes = 0) 
       transferStartedAt = Date.now();
     }
 
+    const clampedPercent = Math.min(100, Math.max(0, percent ?? 0));
+
     isUploading = true;
     progressContainer.classList.remove("hidden");
-    progressBar.style.width = percent + "%";
-    progressBar.setAttribute("aria-valuenow", percent);
+    progressBar.style.width = clampedPercent + "%";
+    progressBar.setAttribute("aria-valuenow", clampedPercent);
 
     // Calculer l'ETA et la vitesse si données suffisantes
     let statusText = "";
@@ -110,14 +112,14 @@ function setTransferState(phase, percent, bytesTransferred = 0, totalBytes = 0) 
     if (bytesTransferred > 0 && totalBytes > 0 && elapsedMs > 1000) {
       const speedBytesPerSec = bytesTransferred / (elapsedMs / 1000);
       if (speedBytesPerSec > 0) {
-        const remainingSecs = Math.round((totalBytes - bytesTransferred) / speedBytesPerSec);
+        const remainingSecs = Math.max(0, Math.round((totalBytes - bytesTransferred) / speedBytesPerSec));
         const speedStr = formatSpeed(speedBytesPerSec);
         const etaStr = formatETA(remainingSecs);
 
         if (phase === "downloading") {
-          statusText = t("popup_state_downloading_eta", { PERCENT: percent, ETA: etaStr, SPEED: speedStr });
+          statusText = t("popup_state_downloading_eta", { PERCENT: clampedPercent, ETA: etaStr, SPEED: speedStr });
         } else {
-          statusText = t("popup_state_uploading_eta", { PERCENT: percent, ETA: etaStr, SPEED: speedStr });
+          statusText = t("popup_state_uploading_eta", { PERCENT: clampedPercent, ETA: etaStr, SPEED: speedStr });
         }
       }
     }
@@ -125,9 +127,9 @@ function setTransferState(phase, percent, bytesTransferred = 0, totalBytes = 0) 
     // Fallback si pas d'ETA
     if (!statusText) {
       if (phase === "downloading") {
-        statusText = t("popup_state_downloading", { PERCENT: percent });
+        statusText = t("popup_state_downloading", { PERCENT: clampedPercent });
       } else {
-        statusText = t("popup_state_uploading", { PERCENT: percent });
+        statusText = t("popup_state_uploading", { PERCENT: clampedPercent });
       }
     }
 
@@ -347,6 +349,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Fermeture par Escape (A-02)
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !onboardingOverlay.classList.contains("hidden")) {
+      e.preventDefault();
+      e.stopPropagation();
       closeOnboarding();
     }
   });

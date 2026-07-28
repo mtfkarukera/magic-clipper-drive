@@ -208,9 +208,10 @@ header, section, footer {
 .logo-icon {
   width: 28px;
   height: 28px;
-  background-color: var(--primary-color);
-  border-radius: 6px;
+  background-color: transparent;
+  border-radius: 0;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 /* ----------------------------------------------------------
@@ -480,32 +481,48 @@ a:focus-visible {
 .onboarding-card {
   width: 85%;
   max-width: 320px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
   background: var(--panel-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 24px;
+  padding: 16px;
   text-align: center;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .onboarding-logo {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 8px;
 }
 
 .onboarding-card h1 {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-main);
-  margin: 0 0 10px 0;
+  margin: 0 0 6px 0;
 }
 
 .onboarding-card p {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
-  line-height: 1.5;
-  margin: 0 0 20px 0;
+  line-height: 1.4;
+  margin: 0 0 10px 0;
+}
+
+.onboarding-features {
+  text-align: left;
+  font-size: 11px;
+  color: var(--text-main);
+  line-height: 1.4;
+  margin: 0 0 14px 0;
+  padding-left: 18px;
+}
+
+.onboarding-features li {
+  margin-bottom: 4px;
 }
 
 .onboarding-card button {

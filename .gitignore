@@ -15,14 +15,13 @@ dist/
 # Agents & directives
 .agents/
 AGENTS.md
-ARCHITECTURE.md
-API-REFERENCE.md
 
 # Dev docs (internes)
 spec.md
 plan.md
 tasks.md
 PLAN_ACTION.md
+submission_kit.md
 
 # Libs obsolètes
 lib/html2pdf.bundle.min.js
