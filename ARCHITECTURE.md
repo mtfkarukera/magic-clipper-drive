@@ -1,5 +1,5 @@
 # ARCHITECTURE.md — Magic Clipper for Google Drive (MC4GD)
-## État de la Codebase — v1.13.0 — Juillet 2026
+## État de la Codebase — v1.14.0 — Juillet 2026
 
 > Documentation technique d'architecture pour le projet MC4GD.
 

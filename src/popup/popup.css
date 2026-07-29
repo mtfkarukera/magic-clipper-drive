@@ -28,7 +28,7 @@
   --status-error: #d93025;
   --error-hover: #b71c1c;
   --status-loading: #fbbc04;
-  --status-disconnected: #e37400;
+  --status-disconnected: #d96b00;
 
   --bg-element: #fff;
   --btn-text: #fff;
@@ -78,6 +78,7 @@
     --btn-text: #202124;
     --badge-text: #202124;
     --badge-text-loading: #202124;
+    --badge-text-disconnected: #202124;
 
     --warning-bg: rgba(249, 168, 37, 0.15);
     --warning-border: rgba(249, 168, 37, 0.3);
@@ -229,7 +230,7 @@ header, section, footer {
 }
 
 #lang-select:focus-visible {
-  outline: 1px solid var(--primary-color);
+  outline: 2px solid var(--primary-color);
 }
 
 /* ----------------------------------------------------------
@@ -249,7 +250,7 @@ header, section, footer {
 .status-loading      { background-color: var(--status-loading); color: var(--badge-text-loading); }
 .status-success      { background-color: var(--status-success); }
 .status-error        { background-color: var(--status-error); }
-.status-disconnected { background-color: var(--status-disconnected); color: #fff; }
+.status-disconnected { background-color: var(--status-disconnected); color: var(--badge-text-disconnected, #fff); }
 
 /* ----------------------------------------------------------
    SECTION FICHIER

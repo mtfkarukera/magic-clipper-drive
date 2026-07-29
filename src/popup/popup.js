@@ -407,11 +407,13 @@ uploadBtn.addEventListener("click", async () => {
 
   // Action d'envoi
   isUploading = true;
+  isProcessingResult = false;
   driveLinkRow.classList.add("hidden");
   setTransferState("downloading", 0);
 
   try {
     const response = await browser.runtime.sendMessage({ action: "uploadCurrentFile" });
+    isProcessingResult = true;
 
     setTransferState("idle", 0);
 
@@ -432,6 +434,7 @@ uploadBtn.addEventListener("click", async () => {
         uploadBtn.disabled = false;
       }, 5000);
     } else {
+      // Afficher l'erreur EN PREMIER pour éviter qu'un setTransferState ultérieur ne l'écrase
       setAuthBadge("error", t("popup_auth_error"));
       setStatusLive(response.error);
       uploadBtn.disabled = false;
@@ -478,8 +481,12 @@ disconnectBtn.addEventListener("click", async () => {
   disconnectBtn.classList.remove("confirm-active");
   disconnectBtn.textContent = t("popup_btn_disconnect");
 
-  // Fire-and-forget — la révocation token est best-effort côté background.
-  browser.runtime.sendMessage({ action: "disconnect" }).catch(() => {});
+  // Rendre la déconnexion synchrone pour purger storage.local avant ré-initialisation
+  try {
+    await browser.runtime.sendMessage({ action: "disconnect" });
+  } catch (e) {
+    // Ignorer
+  }
 
   // Mise à jour synchrone de l'interface
   driveLinkRow.classList.add("hidden");
@@ -492,6 +499,8 @@ disconnectBtn.addEventListener("click", async () => {
   await initTabStatus();
 });
 
+let isProcessingResult = false;
+
 // ----------------------------------------------------------
 // COMMUNICATOR PROGRESSION — messages du background
 // ----------------------------------------------------------
@@ -501,8 +510,10 @@ browser.runtime.onMessage.addListener((message) => {
     const phase = message.phase || message.state;
     setTransferState(phase, message.percent, message.bytesTransferred, message.totalBytes);
   }
-  // Message de fin d'upload envoyé par le background
+  // Message de fin d'upload envoyé par le background (fallback si sendMessage non lu)
   if (message.action === "uploadComplete") {
+    if (isProcessingResult) return;
+    isProcessingResult = true;
     setTransferState("idle", 0);
     if (message.success) {
       setAuthBadge("success", t("popup_auth_connected"));

@@ -5,6 +5,15 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.14.0] — 2026-07-30
+
+### Corrigé / Amélioré
+- 🔒 Verrouillage synchrone anti-double-clic immédiat sur `handleUploadCurrentFile` empêchant tout téléversement en double lors d'interactions rapides.
+- ⚙️ Sécurisation du nettoyage de l'état d'upload via vérification d'identifiant d'instance (`startedAt`) pour éviter l'effacement accidentel de transferts concurrents.
+- 🔄 Déconnexion synchrone de l'utilisateur assurant la purge du stockage local avant ré-initialisation du statut.
+- 🎨 Ajustements d'accessibilité et contrastes WCAG 2.1 AA (thème sombre, contours de focus 2px, badge déconnecté).
+- 🌐 Clarté des messages d'erreur i18n lors de restrictions d'accès réseau aux fichiers distants (`err_network`).
+
 ## [1.13.0] — 2026-07-28
 
 ### Ajouté

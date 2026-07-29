@@ -431,13 +431,13 @@ async function createFolder(token) {
 
 async function getOrCreateFolder(token) {
   if (folderCreationPromise) {
-    await folderCreationPromise;
+    return await folderCreationPromise;
   }
 
-  const { folderId } = await browser.storage.local.get("folderId");
-  if (folderId) return folderId;
-
   folderCreationPromise = (async () => {
+    const { folderId } = await browser.storage.local.get("folderId");
+    if (folderId) return folderId;
+
     const found = await findFolder(token);
     if (found) {
       await browser.storage.local.set({ folderId: found });
@@ -483,7 +483,13 @@ async function persistUploadState(uploadState) {
 /**
  * Supprime l'état d'upload persisté.
  */
-async function clearPersistedUploadState() {
+async function clearPersistedUploadState(expectedStartedAt) {
+  if (expectedStartedAt) {
+    const { activeUpload } = await browser.storage.local.get("activeUpload");
+    if (activeUpload && activeUpload.startedAt !== expectedStartedAt) {
+      return; // Ne pas effacer si un autre transfert a démarré
+    }
+  }
   await browser.storage.local.remove("activeUpload");
 }
 
@@ -498,8 +504,8 @@ function scheduleCleanup(tabId, uploadState) {
   setTimeout(() => {
     if (activeUploads[tabId] === uploadState) {
       delete activeUploads[tabId];
+      clearPersistedUploadState(uploadState.startedAt).catch(() => {});
     }
-    clearPersistedUploadState().catch(() => {});
   }, CLEANUP_DELAY_MS);
 }
 
@@ -520,6 +526,7 @@ function notifyPopup(phase, percent, bytesTransferred = 0, totalBytes = 0) {
     totalBytes
   }).catch(() => {});
 }
+
 
 // ----------------------------------------------------------
 // DOWNLOAD AVEC PROGRESSION (ReadableStream)
@@ -620,6 +627,7 @@ async function downloadFileWithProgress(url, expectedMimeType, tabId, uploadStat
     throw error;
   }
 }
+
 
 // ----------------------------------------------------------
 // UPLOAD RÉSUMABLE CHUNKÉ (Google Drive Resumable Session)
@@ -889,6 +897,8 @@ async function uploadWithRetry(url, fileName, mimeType, tabId, uploadState) {
       return await uploadFileResumable(fileBlob, fileName, mimeType, token, folderId, tabId, uploadState);
     }
     throw err;
+  } finally {
+    fileBlob = null;
   }
 }
 
@@ -963,14 +973,17 @@ async function handleUploadCurrentFile(tab) {
   }
   const tabId = tab.id;
 
-  // T-02 (F-05) — Garde anti-double upload
+  // T-02 (F-05) — Garde anti-double upload synchrone immédiat
   if (activeUploads[tabId]) {
     return { success: false, error: t("err_upload_in_progress") };
   }
+  // Verrouiller immédiatement en mémoire synchrone avant le await detectFileFromTab
+  activeUploads[tabId] = { phase: "initializing", startedAt: Date.now() };
 
   // Détection du format
   const detection = await detectFileFromTab(tab);
   if (!detection.supported) {
+    delete activeUploads[tabId];
     let errorKey = "err_unsupported_type";
     if (detection.reason === "local_file") errorKey = "err_local_file";
     if (detection.reason === "private_network") errorKey = "err_private_network";
@@ -1139,8 +1152,12 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return;
   }
   (async () => {
-    const result = await handleMessage(message);
-    sendResponse(result);
+    try {
+      const result = await handleMessage(message);
+      sendResponse(result);
+    } catch (err) {
+      sendResponse({ success: false, error: err.message || t("err_upload_failed") });
+    }
   })();
   return true; // ← OBLIGATOIRE — maintient le canal ouvert
 });

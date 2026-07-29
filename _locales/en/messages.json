@@ -32,7 +32,7 @@
     }
   },
   "err_auth_failed": { "message": "Google authentication failed.", "description": "Error: authentication failed" },
-  "err_network": { "message": "Network error. Check your internet connection.", "description": "Error: network issue" },
+  "err_network": { "message": "Unable to access source file (remote server blocked or network issue).", "description": "Error: network issue or remote server access blocked" },
   "err_upload_failed": { "message": "Upload failed. Please try again.", "description": "Error: upload failed" },
   "lang_select_label": {
     "message": "Language"

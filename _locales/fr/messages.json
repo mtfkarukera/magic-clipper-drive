@@ -32,7 +32,7 @@
     }
   },
   "err_auth_failed": { "message": "Échec de l'authentification Google.", "description": "Error: authentication failed" },
-  "err_network": { "message": "Erreur réseau. Vérifiez votre connexion Internet.", "description": "Error: network issue" },
+  "err_network": { "message": "Impossible d'accéder au fichier source (accès refusé par le serveur distant ou réseau).", "description": "Error: network issue or remote server access blocked" },
   "err_upload_failed": { "message": "L'envoi a échoué. Veuillez réessayer.", "description": "Error: upload failed" },
   "lang_select_label": {
     "message": "Langue"
