@@ -1,6 +1,6 @@
 # CONTRIBUTING.md — Magic Clipper for Google Drive (MC4GD)
 ## Guide de développement & de livraison
-### Mis à jour : Juillet 2026 — v1.14.0
+### Mis à jour : Juillet 2026 — v1.15.0
 
 > Ce fichier est **public** et commité sur GitHub.
 > Il documente le savoir-faire d'ingénierie et les procédures de livraison du projet.
@@ -107,6 +107,22 @@ Afficher le message `err_local_file` à l'utilisateur, ne jamais tenter le `fetc
 Ne pas se fier uniquement à l'extension dans l'URL.
 Combiner l'analyse de l'URL **et** du titre de l'onglet comme second signal.
 Ne jamais appeler `fetch()` pour vérifier le MIME type à ce stade — trop coûteux.
+
+### 1.9 Injection Dynamique Séquentielle
+
+#### Ordre d'injection strict
+L'injection dynamique via `browser.scripting.executeScript()` doit strictement respecter l'ordre des dépendances :
+1. `lib/Readability.js`
+2. `lib/jspdf.umd.min.js` (si PDF) OU `lib/turndown.js` puis `lib/turndown-plugin-gfm.js` (si Markdown)
+3. `src/content/serializer.js`
+4. `src/content/pdf_generator.js` (si PDF) OU `src/content/md_generator.js` (si Markdown)
+5. `src/content/orchestrator.js`
+
+#### Sentinelles anti-double-injection
+Chaque script injecté vérifie et positionne une sentinelle sur l'objet `window` (`window.__mc4gd_*`). Si la sentinelle est déjà définie, l'exécution s'interrompt immédiatement pour éviter toute redéclaration de variable ou duplication d'écouteurs d'événements.
+
+#### Piège du `return true` asynchrone pour `FETCH_IMAGE`
+Dans le gestionnaire `browser.runtime.onMessage.addListener` de `background.js`, le traitement du message `FETCH_IMAGE` est asynchrone pour le téléchargement et la conversion de l'image en Data URL base64. Il est **impératif** d'inclure un `return true;` synchrone dans le listener pour maintenir le canal de communication ouvert. Sans `return true;`, la réponse est perdue et la génération PDF échoue silencieusement lors de la récupération des images.
 
 ---
 

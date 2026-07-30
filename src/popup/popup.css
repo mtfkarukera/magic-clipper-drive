@@ -572,3 +572,59 @@ a:focus-visible {
   border: 0;
 }
 
+/* ----------------------------------------------------------
+   SECTION CAPTURE DE PAGE (Sprint 16)
+   ---------------------------------------------------------- */
+
+.capture-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.capture-btn {
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 8px;
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.capture-btn:not(:disabled):hover {
+  background-color: var(--primary-hover-bg);
+  border-color: var(--primary-color);
+}
+
+.capture-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.capture-btn span[aria-hidden] {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Mode capture active : réutilise les patterns existants (barre de progression, lien) */
+#capture-section .progress-container {
+  margin-top: 10px;
+}
+
+/* Bouton capture en cours : style cancel (réutilise le pattern existant) */
+.capture-btn.capture-active {
+  background-color: var(--primary-color);
+  color: var(--btn-text);
+  border-color: var(--primary-color);
+}
+
+@media (pointer: coarse) {
+  .capture-btn {
+    padding: 18px 8px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+}

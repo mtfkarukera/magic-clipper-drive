@@ -5,6 +5,19 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.15.0] — 2026-07-31
+
+### Ajouté
+- 🌐 **Capture de page web** : nouveau pipeline de capture permettant de convertir le contenu principal de n'importe quelle page web en PDF ou Markdown et de l'envoyer vers Google Drive.
+- 📎 Extraction intelligente via Mozilla Readability.js avec détection de troncature (3 signaux : ratio de rétention de caractères, texte visible minimum, nombre de paragraphes) et fallback automatique vers le body nettoyé.
+- 📝 Génération Markdown fidèle via Turndown.js 7.2.0 avec plugin GFM (tableaux, listes de tâches, barré).
+- 📄 Génération PDF via jsPDF 2.5.2 avec images intégrées, tableaux et pagination automatique.
+- 🖥️ Popup adaptative : détection automatique fichier direct vs page web avec affichage conditionnel des boutons de capture (PDF/MD) ou du bouton d'envoi direct.
+- 🖼️ Proxy image CORS : les images cross-origin sont relayées via le background pour éviter le tainted canvas lors de la génération PDF.
+- 🔒 Injection dynamique séquentielle des 6 content scripts via `browser.scripting.executeScript()`, respectant l'ordre strict des dépendances.
+- 🌍 6 nouvelles clés i18n de capture dans les 6 locales (en, fr, de, es, vi, gcf).
+- ⚙️ Permission `scripting` ajoutée au manifest pour l'injection dynamique.
+
 ## [1.14.1] — 2026-07-30
 
 ### Corrigé / Amélioré

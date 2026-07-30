@@ -962,6 +962,107 @@ function errorToI18nMessage(e) {
   return t("err_upload_failed");
 }
 
+// ----------------------------------------------------------
+// SANITISATION NOM DE FICHIER POUR CAPTURES WEB
+// ----------------------------------------------------------
+
+/**
+ * Sanitise un titre de page pour en faire un nom de fichier valide.
+ * Supprime les caractères interdits FS, les caractères de contrôle,
+ * les overrides directionnels Unicode, et tronque à 200 caractères.
+ *
+ * @param {string} rawTitle — Titre brut de la page
+ * @param {string} ext — Extension du fichier (.pdf ou .md)
+ * @returns {string} Nom de fichier sanitisé
+ */
+function sanitizeFileName(rawTitle, ext) {
+  if (!rawTitle || rawTitle.trim().length === 0) {
+    // Fallback : date du jour
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `Capture_${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}${ext}`;
+  }
+  let s = rawTitle.trim();
+  s = s.replace(/[<>:"/\\|?*]/g, '_');             // Caractères interdits FS
+  s = s.replace(/[\x00-\x1F\x7F]/g, '');            // Caractères de contrôle
+  s = s.replace(/[\u202A-\u202E\u2066-\u2069\u200F\u200E]/g, ''); // Directionnels Unicode
+  if (s.length > 200) {
+    s = s.slice(0, 200);
+  }
+  return s + ext;
+}
+
+// ----------------------------------------------------------
+// CAPTURE DE PAGE WEB — INJECTION DYNAMIQUE SÉQUENTIELLE
+// ----------------------------------------------------------
+
+/**
+ * Orchestre la capture d'une page web via injection dynamique des content scripts.
+ * Injecte séquentiellement les bibliothèques puis le content script orchestrateur.
+ * Le résultat est transmis par l'orchestrator via uploadCapturedBlob.
+ *
+ * @param {Object} tab — L'onglet actif
+ * @param {string} format — 'pdf' ou 'md'
+ * @returns {Promise<Object>} Confirmation de lancement ou erreur
+ */
+async function handleCaptureWebPage(tab, format) {
+  const tabId = tab.id;
+
+  // Garde anti-double capture
+  if (activeUploads[tabId]) {
+    return { success: false, error: t('err_upload_in_progress') };
+  }
+  activeUploads[tabId] = { phase: 'capturing', startedAt: Date.now() };
+
+  try {
+    // Déterminer la séquence d'injection selon le format
+    let scripts;
+    if (format === 'pdf') {
+      scripts = [
+        'lib/Readability.js',
+        'lib/jspdf.umd.min.js',
+        'src/content/serializer.js',
+        'src/content/pdf_generator.js',
+        'src/content/orchestrator.js'
+      ];
+    } else {
+      scripts = [
+        'lib/Readability.js',
+        'lib/turndown.js',
+        'lib/turndown-plugin-gfm.js',
+        'src/content/serializer.js',
+        'src/content/md_generator.js',
+        'src/content/orchestrator.js'
+      ];
+    }
+
+    // Injection séquentielle (respect des dépendances inter-scripts)
+    for (const script of scripts) {
+      await browser.scripting.executeScript({
+        target: { tabId },
+        files: [script]
+      });
+    }
+
+    // Envoyer l'ordre de capture au content script orchestrateur
+    await browser.tabs.sendMessage(tabId, {
+      action: 'CAPTURE_CONTENT',
+      format: format
+    });
+
+    // Le résultat sera reçu via le handler uploadCapturedBlob dans handleMessage
+    return { success: true, phase: 'capturing' };
+  } catch (err) {
+    // Erreur d'injection — probablement une page restreinte
+    delete activeUploads[tabId];
+    console.error('[MC4GD] Erreur injection content scripts:', err);
+    return {
+      success: false,
+      error: t('err_restricted_page') || 'Cette page est restreinte. Tu peux autoriser l\'accès dans les paramètres de l\'extension (about:addons).'
+    };
+  }
+}
+
 /**
  * Gère le processus d'upload du fichier de l'onglet actif.
  * @param {Object} tab — L'onglet actif
@@ -1134,6 +1235,126 @@ async function handleMessage(message) {
       return await handleUploadCurrentFile(tab);
     }
 
+    // ----- CAPTURE DE PAGE WEB (Sprint 15) -----
+
+    case "captureWebPage": {
+      const tab = await getActiveTab();
+      if (!tab) {
+        return { success: false, error: "No active tab" };
+      }
+      return await handleCaptureWebPage(tab, message.format || 'pdf');
+    }
+
+    case "uploadCapturedBlob": {
+      // Reçu depuis le content script orchestrateur après capture
+      const tab = await getActiveTab();
+      if (!tab) return { success: false, error: "No active tab" };
+      const tabId = tab.id;
+
+      // Vérifier si une erreur remonte du content script
+      if (message.error) {
+        const uploadState = activeUploads[tabId];
+        if (uploadState) {
+          uploadState.phase = 'error';
+          uploadState.error = message.error;
+          await persistUploadState(uploadState);
+          scheduleCleanup(tabId, uploadState);
+        }
+        browser.runtime.sendMessage({
+          action: 'uploadComplete',
+          success: false,
+          error: message.error
+        }).catch(() => {});
+        return { success: false, error: message.error };
+      }
+
+      // Préparer le blob et le nom de fichier
+      const format = message.format || 'pdf';
+      const ext = format === 'md' ? '.md' : '.pdf';
+      const mimeType = format === 'md' ? 'text/markdown' : 'application/pdf';
+      const fileName = sanitizeFileName(message.pageTitle, ext);
+
+      let fileBlob;
+      if (format === 'md') {
+        // Markdown : texte brut
+        fileBlob = new Blob([message.data], { type: 'text/markdown; charset=utf-8' });
+      } else {
+        // PDF : data URI Base64 → ArrayBuffer
+        const base64 = message.data.split(',')[1];
+        const byteString = atob(base64);
+        const ab = new Uint8Array(byteString.length);
+        for (let i = 0; i < byteString.length; i++) {
+          ab[i] = byteString.charCodeAt(i);
+        }
+        fileBlob = new Blob([ab], { type: 'application/pdf' });
+      }
+
+      // Initialiser le suivi du transfert
+      const uploadState = {
+        tabId,
+        phase: 'uploading',
+        percent: 0,
+        fileName,
+        mimeType,
+        url: tab.url,
+        sessionUrl: null,
+        bytesUploaded: 0,
+        totalSize: fileBlob.size,
+        controller: null,
+        uploadController: null,
+        link: null,
+        error: null,
+        startedAt: Date.now()
+      };
+      activeUploads[tabId] = uploadState;
+      await persistUploadState(uploadState);
+      notifyPopup('uploading', 0);
+
+      // Raccorder au pipeline Drive existant
+      try {
+        let token = await getValidToken();
+        let folderId;
+        try {
+          folderId = await getOrCreateFolder(token);
+        } catch (err) {
+          if (err.message === 'RETRY_401') {
+            await browser.storage.local.remove(['accessToken', 'expiresAt']);
+            token = await getValidToken();
+            folderId = await getOrCreateFolder(token);
+          } else {
+            throw err;
+          }
+        }
+
+        const result = await uploadFileResumable(fileBlob, fileName, mimeType, token, folderId, tabId, uploadState);
+
+        uploadState.phase = 'success';
+        uploadState.link = result.webViewLink;
+        await persistUploadState(uploadState);
+        scheduleCleanup(tabId, uploadState);
+
+        const response = { success: true, fileName: result.name, link: result.webViewLink };
+        browser.runtime.sendMessage({
+          action: 'uploadComplete', ...response
+        }).catch(() => {});
+        return response;
+      } catch (e) {
+        const errorMsg = errorToI18nMessage(e);
+        uploadState.phase = 'error';
+        uploadState.error = errorMsg;
+        await persistUploadState(uploadState);
+        scheduleCleanup(tabId, uploadState);
+
+        const response = { success: false, error: errorMsg };
+        browser.runtime.sendMessage({
+          action: 'uploadComplete', ...response
+        }).catch(() => {});
+        return response;
+      } finally {
+        fileBlob = null;
+      }
+    }
+
     case "disconnect":
       await disconnect();
       return { success: true };
@@ -1151,6 +1372,39 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (sender.id !== browser.runtime.id) {
     return;
   }
+
+  // ----------------------------------------------------------
+  // HANDLER FETCH_IMAGE — Proxy CORS pour les images des content scripts
+  // Doit être traité ICI (pas dans handleMessage) car il provient
+  // des content scripts, pas de la popup, et utilise sendResponse directement.
+  // ----------------------------------------------------------
+  if (message.action === 'FETCH_IMAGE') {
+    (async () => {
+      const { url } = message;
+      // Sécurité : rejeter les schémas non-HTTP pour prévenir les abus SSRF
+      if (!url || !(/^https?:\/\//.test(url))) {
+        sendResponse({ error: 'URL invalide ou schéma non supporté.' });
+        return;
+      }
+      try {
+        // Sécurité (SEC-1) : credentials omit pour ne pas envoyer les cookies vers des serveurs tiers
+        const resp = await fetch(url, { credentials: 'omit', signal: AbortSignal.timeout(10_000) });
+        if (!resp.ok) { sendResponse({ error: `HTTP ${resp.status}` }); return; }
+        const blob = await resp.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => sendResponse({ data: reader.result });
+        reader.onerror = () => sendResponse({ error: 'FileReader failed' });
+        reader.readAsDataURL(blob);
+      } catch (err) {
+        sendResponse({ error: err.message });
+      }
+    })();
+    return true; // Canal ouvert pour le FileReader asynchrone
+  }
+
+  // ----------------------------------------------------------
+  // ROUTEUR PRINCIPAL (messages popup + uploadCapturedBlob)
+  // ----------------------------------------------------------
   (async () => {
     try {
       const result = await handleMessage(message);

@@ -26,25 +26,35 @@ function getIconForMime(mimeType) {
 // RÉFÉRENCES DOM
 // ----------------------------------------------------------
 
-const uploadBtn         = document.getElementById("upload-btn");
-const authStatus        = document.getElementById("auth-status");
-const fileInfo          = document.getElementById("file-info");
-const fileIcon          = document.getElementById("file-icon");
-const fileName          = document.getElementById("file-name");
-const driveLinkRow      = document.getElementById("drive-link-row");
-const driveLink         = document.getElementById("drive-link");
-const disconnectBtn     = document.getElementById("disconnect-btn");
-const statusMessage     = document.getElementById("status-message");
-const btnSpinner        = document.getElementById("btn-spinner");
-const btnText           = uploadBtn.querySelector(".btn-text");
-const langSelect        = document.getElementById("lang-select");
-const onboardingOverlay = document.getElementById("onboarding-overlay");
-const onboardingBtn     = document.getElementById("onboarding-btn");
-const progressContainer = document.getElementById("progress-container");
-const progressBar       = document.getElementById("progress-bar");
+const uploadBtn         = document.getElementById('upload-btn');
+const authStatus        = document.getElementById('auth-status');
+const fileInfo          = document.getElementById('file-info');
+const fileIcon          = document.getElementById('file-icon');
+const fileName          = document.getElementById('file-name');
+const driveLinkRow      = document.getElementById('drive-link-row');
+const driveLink         = document.getElementById('drive-link');
+const disconnectBtn     = document.getElementById('disconnect-btn');
+const statusMessage     = document.getElementById('status-message');
+const btnSpinner        = document.getElementById('btn-spinner');
+const btnText           = uploadBtn.querySelector('.btn-text');
+const langSelect        = document.getElementById('lang-select');
+const onboardingOverlay = document.getElementById('onboarding-overlay');
+const onboardingBtn     = document.getElementById('onboarding-btn');
+const progressContainer = document.getElementById('progress-container');
+const progressBar       = document.getElementById('progress-bar');
+
+// --- Éléments de la section capture (Sprint 16) ---
+const directUploadSection     = document.getElementById('direct-upload-section');
+const captureSection          = document.getElementById('capture-section');
+const capturePdfBtn           = document.getElementById('capture-pdf-btn');
+const captureMdBtn            = document.getElementById('capture-md-btn');
+const captureProgressContainer = document.getElementById('capture-progress-container');
+const captureProgressBar      = document.getElementById('capture-progress-bar');
+const captureLinkRow          = document.getElementById('capture-link-row');
+const captureLink             = document.getElementById('capture-link');
 
 // #file-icon contient des emoji décoratifs — masquer aux lecteurs d'écran (A-05)
-fileIcon.setAttribute("aria-hidden", "true");
+fileIcon.setAttribute('aria-hidden', 'true');
 
 let isUploading = false;
 let transferStartedAt = 0;
@@ -256,67 +266,89 @@ async function closeOnboarding() {
 /**
  * Interroge le background sur l'état de l'onglet actif et met à jour l'interface.
  * Vérifie également si un accessToken est présent pour le badge d'authentification.
+ * Gère 3 modes : fichier direct, page web capturable, page non supportée.
  */
 async function initTabStatus() {
-  setAuthBadge("loading", t("popup_auth_loading"));
-  setStatusLive(t("popup_detecting"));
+  setAuthBadge('loading', t('popup_auth_loading'));
+  setStatusLive(t('popup_detecting'));
 
   // 1. Déterminer et mettre à jour le statut d'authentification
   let hasToken = false;
   try {
-    const { accessToken } = await browser.storage.local.get("accessToken");
+    const { accessToken } = await browser.storage.local.get('accessToken');
     if (accessToken) {
-      setAuthBadge("success", t("popup_auth_connected"));
+      setAuthBadge('success', t('popup_auth_connected'));
       updateDisconnectVisibility(true);
       hasToken = true;
     } else {
-      setAuthBadge("disconnected", t("popup_auth_disconnected"));
+      setAuthBadge('disconnected', t('popup_auth_disconnected'));
       updateDisconnectVisibility(false);
     }
   } catch (e) {
-    setAuthBadge("error", t("popup_auth_error"));
+    setAuthBadge('error', t('popup_auth_error'));
     updateDisconnectVisibility(false);
   }
 
   // 2. Déterminer l'éligibilité du fichier sur l'onglet actif
   try {
-    const result = await browser.runtime.sendMessage({ action: "getTabStatus" });
+    const result = await browser.runtime.sendMessage({ action: 'getTabStatus' });
 
     if (result.supported) {
+      // --- MODE FICHIER DIRECT (existant, inchangé) ---
+      directUploadSection.classList.remove('hidden');
+      captureSection.classList.add('hidden');
       fileIcon.textContent = getIconForMime(result.mimeType);
       fileName.textContent = result.fileName;
-      fileInfo.classList.remove("warning");
+      fileInfo.classList.remove('warning');
       uploadBtn.disabled = false;
       if (hasToken) {
-        setStatusLive(t("popup_idle_label"));
+        setStatusLive(t('popup_idle_label'));
       } else {
-        setStatusLive(t("popup_disconnected_status"));
+        setStatusLive(t('popup_disconnected_status'));
       }
-    } else {
-      fileInfo.classList.add("warning");
+    } else if (result.reason === 'local_file' || result.reason === 'private_network' || result.reason === 'file_too_large') {
+      // --- MODE ERREUR SPÉCIFIQUE (existant, inchangé) ---
+      directUploadSection.classList.remove('hidden');
+      captureSection.classList.add('hidden');
+      fileInfo.classList.add('warning');
       uploadBtn.disabled = true;
-
-      if (result.reason === "local_file") {
-        fileName.textContent = t("popup_local_file");
-        setStatusLive(t("err_local_file"));
-      } else if (result.reason === "private_network") {
-        fileName.textContent = t("popup_unsupported");
-        setStatusLive(t("err_private_network"));
-      } else if (result.reason === "file_too_large") {
-        fileName.textContent = t("popup_unsupported");
-        setStatusLive(t("err_file_too_large"));
-      } else if (result.reason === "system_page") {
-        fileName.textContent = t("popup_unsupported");
-        setStatusLive(t("popup_unsupported"));
+      if (result.reason === 'local_file') {
+        fileName.textContent = t('popup_local_file');
+        setStatusLive(t('err_local_file'));
+      } else if (result.reason === 'private_network') {
+        fileName.textContent = t('popup_unsupported');
+        setStatusLive(t('err_private_network'));
       } else {
-        fileName.textContent = t("popup_no_file");
-        setStatusLive(t("popup_unsupported"));
+        fileName.textContent = t('popup_unsupported');
+        setStatusLive(t('err_file_too_large'));
+      }
+    } else if (result.reason === 'system_page') {
+      // --- MODE PAGE SYSTÈME (about:*, moz-extension:*) ---
+      directUploadSection.classList.add('hidden');
+      captureSection.classList.add('hidden');
+      fileInfo.classList.add('warning');
+      fileName.textContent = t('popup_unsupported');
+      setStatusLive(t('popup_unsupported'));
+    } else {
+      // --- MODE CAPTURE DE PAGE WEB (NOUVEAU) ---
+      // Aucun fichier détectable → proposer la capture
+      directUploadSection.classList.add('hidden');
+      captureSection.classList.remove('hidden');
+      fileInfo.classList.remove('warning');
+      fileIcon.textContent = '🌐';
+      fileName.textContent = t('popup_web_page') || 'Page web détectée';
+      capturePdfBtn.disabled = !hasToken;
+      captureMdBtn.disabled = !hasToken;
+      if (hasToken) {
+        setStatusLive(t('popup_capture_ready') || 'Capture de page disponible');
+      } else {
+        setStatusLive(t('popup_disconnected_status'));
       }
     }
   } catch (e) {
-    fileInfo.classList.add("warning");
-    fileName.textContent = t("popup_no_file");
-    setStatusLive(t("err_network"));
+    fileInfo.classList.add('warning');
+    fileName.textContent = t('popup_no_file');
+    setStatusLive(t('err_network'));
   }
 }
 
@@ -389,12 +421,12 @@ langSelect.addEventListener("change", async () => {
 // UPLOAD / ANNULATION — clic sur le bouton principal
 // ----------------------------------------------------------
 
-uploadBtn.addEventListener("click", async () => {
+uploadBtn.addEventListener('click', async () => {
   if (isUploading) {
     // Action d'annulation
     uploadBtn.disabled = true;
     try {
-      await browser.runtime.sendMessage({ action: "cancelUpload" });
+      await browser.runtime.sendMessage({ action: 'cancelUpload' });
     } catch (e) {
       // Ignorer
     }
@@ -408,24 +440,24 @@ uploadBtn.addEventListener("click", async () => {
   // Action d'envoi
   isUploading = true;
   isProcessingResult = false;
-  driveLinkRow.classList.add("hidden");
-  setTransferState("downloading", 0);
+  driveLinkRow.classList.add('hidden');
+  setTransferState('downloading', 0);
 
   try {
-    const response = await browser.runtime.sendMessage({ action: "uploadCurrentFile" });
+    const response = await browser.runtime.sendMessage({ action: 'uploadCurrentFile' });
     isProcessingResult = true;
 
-    setTransferState("idle", 0);
+    setTransferState('idle', 0);
 
     if (response.success) {
-      setAuthBadge("success", t("popup_auth_connected"));
-      setStatusLive(t("popup_success", { FILE_NAME: response.fileName }));
+      setAuthBadge('success', t('popup_auth_connected'));
+      setStatusLive(t('popup_success', { FILE_NAME: response.fileName }));
       uploadBtn.disabled = true;
       updateDisconnectVisibility(true);
 
-      if (response.link && response.link.startsWith("https://drive.google.com/")) {
+      if (response.link && response.link.startsWith('https://drive.google.com/')) {
         driveLink.href = response.link;
-        driveLinkRow.classList.remove("hidden");
+        driveLinkRow.classList.remove('hidden');
         driveLink.focus();
       }
 
@@ -435,22 +467,70 @@ uploadBtn.addEventListener("click", async () => {
       }, 5000);
     } else {
       // Afficher l'erreur EN PREMIER pour éviter qu'un setTransferState ultérieur ne l'écrase
-      setAuthBadge("error", t("popup_auth_error"));
+      setAuthBadge('error', t('popup_auth_error'));
       setStatusLive(response.error);
       uploadBtn.disabled = false;
       // Vérifier l'auth pour décider de la visibilité du bouton déconnexion
-      const { accessToken } = await browser.storage.local.get("accessToken");
+      const { accessToken } = await browser.storage.local.get('accessToken');
       updateDisconnectVisibility(!!accessToken);
     }
 
   } catch (e) {
-    setTransferState("idle", 0);
-    setAuthBadge("error", t("popup_auth_error"));
-    setStatusLive(t("err_upload_failed"));
+    setTransferState('idle', 0);
+    setAuthBadge('error', t('popup_auth_error'));
+    setStatusLive(t('err_upload_failed'));
     uploadBtn.disabled = false;
     updateDisconnectVisibility(false);
   }
 });
+
+// ----------------------------------------------------------
+// CAPTURE DE PAGE WEB — clic sur les boutons PDF/MD
+// ----------------------------------------------------------
+
+let isCapturing = false;
+
+async function startCapture(format) {
+  if (isCapturing || isUploading) return;
+
+  isCapturing = true;
+  isProcessingResult = false;
+  capturePdfBtn.disabled = true;
+  captureMdBtn.disabled = true;
+  captureLinkRow.classList.add('hidden');
+  captureProgressContainer.classList.remove('hidden');
+  captureProgressBar.style.width = '0%';
+  setStatusLive(t('popup_capture_in_progress') || 'Capture en cours...');
+  setAuthBadge('loading', t('popup_btn_uploading'));
+
+  try {
+    const response = await browser.runtime.sendMessage({
+      action: 'captureWebPage',
+      format: format
+    });
+
+    if (!response.success) {
+      // Erreur immédiate (page restreinte, etc.)
+      isCapturing = false;
+      captureProgressContainer.classList.add('hidden');
+      setAuthBadge('error', t('popup_auth_error'));
+      setStatusLive(response.error);
+      capturePdfBtn.disabled = false;
+      captureMdBtn.disabled = false;
+    }
+    // Sinon, le résultat arrivera via uploadComplete (asynchrone)
+  } catch (e) {
+    isCapturing = false;
+    captureProgressContainer.classList.add('hidden');
+    setAuthBadge('error', t('popup_auth_error'));
+    setStatusLive(t('err_upload_failed'));
+    capturePdfBtn.disabled = false;
+    captureMdBtn.disabled = false;
+  }
+}
+
+capturePdfBtn.addEventListener('click', () => startCapture('pdf'));
+captureMdBtn.addEventListener('click', () => startCapture('md'));
 
 // ----------------------------------------------------------
 // DÉCONNEXION — double-clic avec timer (confirm() interdit MV3)
@@ -506,37 +586,84 @@ let isProcessingResult = false;
 // ----------------------------------------------------------
 
 browser.runtime.onMessage.addListener((message) => {
-  if (message.action === "uploadProgress") {
+  if (message.action === 'uploadProgress') {
     const phase = message.phase || message.state;
-    setTransferState(phase, message.percent, message.bytesTransferred, message.totalBytes);
+
+    // Progression du mode capture : utiliser la barre de progression capture
+    if (isCapturing) {
+      captureProgressBar.style.width = (message.percent || 0) + '%';
+      captureProgressBar.setAttribute('aria-valuenow', message.percent || 0);
+      if (phase === 'uploading') {
+        setStatusLive(t('popup_state_uploading', { PERCENT: message.percent || 0 }));
+      }
+    } else {
+      setTransferState(phase, message.percent, message.bytesTransferred, message.totalBytes);
+    }
   }
+
   // Message de fin d'upload envoyé par le background (fallback si sendMessage non lu)
-  if (message.action === "uploadComplete") {
+  if (message.action === 'uploadComplete') {
     if (isProcessingResult) return;
     isProcessingResult = true;
-    setTransferState("idle", 0);
-    if (message.success) {
-      setAuthBadge("success", t("popup_auth_connected"));
-      setStatusLive(t("popup_success", { FILE_NAME: message.fileName }));
-      uploadBtn.disabled = true;
-      updateDisconnectVisibility(true);
-      if (message.link && message.link.startsWith("https://drive.google.com/")) {
-        driveLink.href = message.link;
-        driveLinkRow.classList.remove("hidden");
-        driveLink.focus();
-      }
 
-      // UX-01 : Permettre le ré-upload après un succès en réactivant le bouton après 5 secondes
-      setTimeout(() => {
-        uploadBtn.disabled = false;
-      }, 5000);
+    if (isCapturing) {
+      // --- Mode capture ---
+      isCapturing = false;
+      captureProgressContainer.classList.add('hidden');
+
+      if (message.success) {
+        setAuthBadge('success', t('popup_auth_connected'));
+        setStatusLive(t('popup_success', { FILE_NAME: message.fileName }));
+        capturePdfBtn.disabled = true;
+        captureMdBtn.disabled = true;
+        updateDisconnectVisibility(true);
+
+        if (message.link && message.link.startsWith('https://drive.google.com/')) {
+          captureLink.href = message.link;
+          captureLinkRow.classList.remove('hidden');
+          captureLink.focus();
+        }
+
+        // Permettre une nouvelle capture après 5 secondes
+        setTimeout(() => {
+          capturePdfBtn.disabled = false;
+          captureMdBtn.disabled = false;
+        }, 5000);
+      } else {
+        setAuthBadge('error', t('popup_auth_error'));
+        setStatusLive(message.error || t('err_upload_failed'));
+        capturePdfBtn.disabled = false;
+        captureMdBtn.disabled = false;
+        browser.storage.local.get('accessToken').then(({ accessToken }) => {
+          updateDisconnectVisibility(!!accessToken);
+        });
+      }
     } else {
-      setAuthBadge("error", t("popup_auth_error"));
-      setStatusLive(message.error || t("err_upload_failed"));
-      uploadBtn.disabled = false;
-      browser.storage.local.get("accessToken").then(({ accessToken }) => {
-        updateDisconnectVisibility(!!accessToken);
-      });
+      // --- Mode fichier direct (existant, inchangé) ---
+      setTransferState('idle', 0);
+      if (message.success) {
+        setAuthBadge('success', t('popup_auth_connected'));
+        setStatusLive(t('popup_success', { FILE_NAME: message.fileName }));
+        uploadBtn.disabled = true;
+        updateDisconnectVisibility(true);
+        if (message.link && message.link.startsWith('https://drive.google.com/')) {
+          driveLink.href = message.link;
+          driveLinkRow.classList.remove('hidden');
+          driveLink.focus();
+        }
+
+        // UX-01 : Permettre le ré-upload après un succès en réactivant le bouton après 5 secondes
+        setTimeout(() => {
+          uploadBtn.disabled = false;
+        }, 5000);
+      } else {
+        setAuthBadge('error', t('popup_auth_error'));
+        setStatusLive(message.error || t('err_upload_failed'));
+        uploadBtn.disabled = false;
+        browser.storage.local.get('accessToken').then(({ accessToken }) => {
+          updateDisconnectVisibility(!!accessToken);
+        });
+      }
     }
   }
 });

@@ -1,4 +1,4 @@
-# Magic Clipper for Google Drive ![Version 1.14.1](https://img.shields.io/badge/version-1.14.1-blue.svg) ![Licence MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-brightgreen.svg)
+# Magic Clipper for Google Drive ![Version 1.15.0](https://img.shields.io/badge/version-1.15.0-blue.svg) ![Licence MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-brightgreen.svg)
 
 
 Envoyez n'importe quel fichier que Firefox peut afficher directement sur votre Google Drive en un seul clic.
@@ -8,6 +8,7 @@ Envoyez n'importe quel fichier que Firefox peut afficher directement sur votre G
 | Fonctionnalité | Détails |
 | --- | --- |
 | Détection automatique | Analyse de l'URL et du type de contenu de l'onglet actif. |
+| Capture de page web | Convertit le contenu principal de toute page web en PDF ou Markdown avant envoi vers Drive, grâce à Readability.js, jsPDF et Turndown.js. |
 | 32 Formats supportés | PDF, PNG, JPG, JPEG, GIF, WEBP, SVG, AVIF, BMP, ICO, TIFF, MP3, MP4, WEBM, OGG, WAV, AAC, FLAC, M4A, MOV, MPEG, TXT, MD, CSV, JSON, DOCX, XLSX, PPTX, ZIP, TAR, GZ, EPUB. |
 | Upload résumable chunké | Gestion robuste des fichiers volumineux (jusqu'à 200 Mo) via upload par morceaux de 8 Mo avec reprise réseau automatique. |
 | Barre de progression | Indication en temps réel de l'état du téléchargement et du téléversement avec pourcentage, débit instantané et estimation du temps restant (ETA). |
@@ -26,9 +27,19 @@ Envoyez n'importe quel fichier que Firefox peut afficher directement sur votre G
 mc4gd-firefox/
 ├── manifest.json             # Manifeste V3 (permissions, Event Page)
 ├── README.md                 # Documentation du projet
+├── lib/                      # Bibliothèques externes pour la capture web
+│   ├── Readability.js        # Mozilla Readability (extraction contenu)
+│   ├── jspdf.umd.min.js      # jsPDF 2.5.2 (génération PDF)
+│   ├── turndown.js           # Turndown 7.2.0 (HTML → Markdown)
+│   └── turndown-plugin-gfm.js # Plugin GFM pour Turndown
 ├── src/
 │   ├── background/
 │   │   └── background.js     # Authentification OAuth2 et logique d'API Drive
+│   ├── content/              # Content scripts de capture web (injectés dynamiquement)
+│   │   ├── serializer.js     # Extraction Readability + sérialisation DFS
+│   │   ├── pdf_generator.js  # Génération PDF via jsPDF
+│   │   ├── md_generator.js   # Génération Markdown via Turndown
+│   │   └── orchestrator.js   # Orchestrateur de capture
 │   ├── popup/
 │   │   ├── popup.html        # Structure UI 100% localisée
 │   │   ├── popup.css         # Design Glassmorphism et mode sombre CSS natif

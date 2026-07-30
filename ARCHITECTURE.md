@@ -1,5 +1,5 @@
 # ARCHITECTURE.md — Magic Clipper for Google Drive (MC4GD)
-## État de la Codebase — v1.14.0 — Juillet 2026
+## État de la Codebase — v1.15.0 — Juillet 2026
 
 > Documentation technique d'architecture pour le projet MC4GD.
 
@@ -7,7 +7,7 @@
 
 ## 1. Vue d'Ensemble de l'Architecture
 
-MC4GD est une extension Firefox MV3 indépendante et autonome. Elle suit une architecture stricte de séparation des responsabilités en couches de script, sans injection de code dans les pages de l'utilisateur (zéro Content Script).
+MC4GD est une extension Firefox MV3 indépendante et autonome. Elle suit une architecture stricte de séparation des responsabilités en couches de script. Pour les pages web standards sans fichier direct, MC4GD utilise des content scripts injectés dynamiquement à la demande via `browser.scripting.executeScript()` afin d'extraire le contenu principal et de générer un PDF ou du Markdown avant envoi vers Google Drive.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -20,11 +20,19 @@ MC4GD est une extension Firefox MV3 indépendante et autonome. Elle suit une arc
                                  │ browser.runtime.sendMessage
                                  │ sendResponse({ success, ... })
 ┌────────────────────────────────▼────────────────────────────────┐
+│  CONTENT SCRIPTS (src/content/ & lib/)                          │
+│  - Readability, jsPDF, Turndown (+GFM), Serializer, Generators │
+│  - Orchestrator (capture DOM, conversion PDF/MD)                │
+│  * Injectés dynamiquement via browser.scripting.executeScript() │
+└────────────────┬────────────────────────────────────────────────┘
+                                 │ browser.runtime.sendMessage
+                                 │ (FETCH_IMAGE, uploadCapturedBlob)
+┌────────────────────────────────▼────────────────────────────────┐
 │  BACKGROUND (src/background/background.js)                      │
 │  - Event Page MV3 (éveillé à la demande, non persistant)        │
 │  - Gestionnaire d'identité (OAuth2 implicite)                  │
 │  - Logique API Drive v3 (recherche, création, upload résumable) │
-│  - Sécurité (SSRF / Validation IP privées)                      │
+│  - Sécurité (SSRF / Validation IP privées) & Proxy Image CORS  │
 │  * Logique métier : AUCUNE manipulation de DOM                  │
 └────────────────┬────────────────────────────────────────────────┘
                                  │ fetch()
@@ -33,13 +41,13 @@ MC4GD est une extension Firefox MV3 indépendante et autonome. Elle suit une arc
 ```
 
 ### Principes Fondamentaux
-1. **Zéro Content Script** : L'extension n'a pas accès au DOM de la page web visitée. Elle s'appuie sur l'analyse de l'onglet actif et sur un téléchargement sécurisé du document depuis le background.
+1. **Content Scripts Dynamiques** : L'extension injecte à la demande des content scripts temporaires dans l'onglet actif via `browser.scripting.executeScript()` uniquement lors des opérations de capture de page web, évitant ainsi toute surcharge permanente du navigateur.
 2. **Zéro Serveur Tiers** : L'upload se fait directement du navigateur vers l'API Google Drive. Aucune donnée ne transite par un serveur externe de stockage.
 3. **i18n Intégral** : Aucun texte statique en dur. Le chargement et l'application des langues se font au démarrage via un moteur interne partagé.
 
 ---
 
-## 2. Arborescence Détaillée (v1.12.0)
+## 2. Arborescence Détaillée (v1.15.0)
 
 ```
 magic-clipper-drive/
@@ -57,11 +65,21 @@ magic-clipper-drive/
 │   └── gcf/messages.json      # Kréyòl (sélection manuelle en popup)
 ├── icons/
 │   └── icon.svg               # Icône vectorielle unique (~13 Ko), squircle dégradé + trombone
+├── lib/                       # Bibliothèques externes de capture web
+│   ├── Readability.js         # Mozilla Readability (extraction contenu principal)
+│   ├── jspdf.umd.min.js       # jsPDF 2.5.2 (génération PDF côté client)
+│   ├── turndown.js            # Turndown 7.2.0 (HTML → Markdown)
+│   └── turndown-plugin-gfm.js # Plugin GFM pour tableaux Markdown
 ├── tools/
 │   └── check-i18n.js          # Script Node.js de validation et cohérence des traductions
 └── src/
     ├── background/
-    │   └── background.js      # Event Page: OAuth2, détection MIME, API Google Drive
+    │   └── background.js      # Event Page: OAuth2, détection MIME, API Google Drive, Proxy CORS
+    ├── content/               # Content scripts de capture web
+    │   ├── serializer.js      # Extraction Readability + sérialisation DFS (texte, images, tableaux)
+    │   ├── pdf_generator.js   # Génération PDF via jsPDF (dessin manuel)
+    │   ├── md_generator.js    # Génération Markdown via Turndown.js + plugin GFM
+    │   └── orchestrator.js    # Orchestrateur de capture (injecté en dernier)
     ├── popup/
     │   ├── popup.html         # Interface utilisateur
     │   ├── popup.css          # Design et styles (mode sombre, animations, focus)
@@ -78,6 +96,7 @@ Le fichier `manifest.json` définit strictement les permissions minimales requis
 
 *   **`identity`** : Nécessaire pour instancier le flux d'autorisation OAuth2 Google en mode silencieux ou interactif via `browser.identity.launchWebAuthFlow()`.
 *   **`storage`** : Persiste l'état de l'utilisateur (`accessToken`, `expiresAt`, `folderId`, `locale` choisie, l'indicateur d'onboarding `hasSeenWelcome`, et `activeUpload` — état d'upload persisté pour survie au suspend).
+*   **`scripting`** : Nécessaire pour l’injection dynamique des content scripts de capture (Readability, jsPDF, Turndown, serializer, generators, orchestrator) via `browser.scripting.executeScript()`.
 *   **`tabs`** : Permet au background de lire l'URL et le titre de l'onglet actif avec `browser.tabs.query({ active: true, currentWindow: true })`.
 *   **`host_permissions`** :
     *   `https://www.googleapis.com/*` : Indispensable pour interagir avec les endpoints de l'API Google Drive v3 (recherche de dossier, création de dossier, sessions d'upload résumables).
@@ -169,17 +188,63 @@ Les transferts s'effectuent en trois phases distinctes :
 
 ---
 
-## 6. Logique UI de la Popup (`popup.js`)
+---
+
+## 6. Pipeline de Capture Web
+
+La version v1.15.0 introduit le pipeline de capture de page web permettant d'extraire le contenu textuel et visuel principal d'une page HTML pour le convertir en fichier PDF ou Markdown avant son téléversement vers Google Drive.
+
+```
+┌───────────┐     ┌─────────────────┐     ┌────────────────────┐     ┌──────────────────┐     ┌────────────────────┐
+│ DOM Page  │ ──► │ Readability.js  │ ──► │   Serializer.js    │ ──► │  Generator (PDF/ │ ──► │ Background (Upload │
+│  Active   │     │ (Clean Article) │     │ (DFS pre-order)    │     │   Markdown)      │     │  vers Google Drive)│
+└───────────┘     └─────────────────┘     └────────────────────┘     └──────────────────┘     └────────────────────┘
+```
+
+### 6.1 Injection Dynamique Séquentielle
+Lorsqu'aucun fichier direct n'est détecté sur l'onglet actif et que l'utilisateur clique sur « Capture PDF » ou « Capture Markdown », la popup demande au background d'injecter la suite de scripts via `browser.scripting.executeScript()`.
+
+L'injection respecte l'ordre strict des dépendances suivant (6 scripts au total) :
+1. `lib/Readability.js` : Parsing et isolation du contenu principal de la page web.
+2. `lib/jspdf.umd.min.js` (pour PDF) OU `lib/turndown.js` puis `lib/turndown-plugin-gfm.js` (pour Markdown).
+3. `src/content/serializer.js` : Traversée DFS du DOM extrait par Readability.
+4. `src/content/pdf_generator.js` (pour PDF) OU `src/content/md_generator.js` (pour Markdown).
+5. `src/content/orchestrator.js` : Orchestration de l'exécution, génération du Blob binaire et transmission au background.
+
+### 6.2 Sérialisation DFS & Fidélité de l'Ordre
+Le fichier `src/content/serializer.js` effectue une traversée en profondeur (*DFS pre-order*) de l'élément racine retourné par Readability. Cette traversée extrait les blocs de texte, les titres (`<h1>` à `<h6>`), les listes, les tableaux et les images en conservant rigoureusement leur ordre d'apparition original dans le document.
+
+### 6.3 Détection de Troncature Readability
+Mozilla Readability.js peut s'avérer trop agressif sur certains sites et tronquer du contenu pertinent. Pour y pallier, `serializer.js` évalue 3 signaux de contrôle :
+1. **Ratio de rétention de caractères** : Comparaison du volume de texte extrait par Readability par rapport au texte brut total de `document.body`.
+2. **Seuil minimal de texte visible** : Nombre total de caractères extraits.
+3. **Nombre minimum de paragraphes** : Présence suffisante d'éléments de structure `<p>`.
+
+Si ces 3 signaux révèlent une troncature anormale, le serializer déclenche un fallback automatique vers une copie nettoyée de `document.body` (débarrassée des éléments `<script>`, `<style>`, `<nav>`, `<header>`, `<footer>`, `<aside>` et bannières publicitaires).
+
+### 6.4 Proxy Image CORS (`FETCH_IMAGE`)
+Lors de la génération de document PDF (via `jsPDF`), l'intégration d'images cross-origin directement dans un `<canvas>` provoque un blocage de sécurité (*tainted canvas*).
+Pour contourner cette restriction :
+1. Le générateur `pdf_generator.js` demande au background de télécharger l'image via un message `FETCH_IMAGE`.
+2. `background.js` télécharge l'image de manière privilégiée via `fetch()`, la convertit en Data URL base64 et la renvoie au content script.
+3. L'image en base64 est ensuite dessinée sans erreur CORS dans le document PDF final.
+
+---
+
+## 7. Logique UI de la Popup (`popup.js`)
 
 La popup implémente une machine à états stricte basée sur les messages asynchrones reçus du background.
 
-### 6.1 Matrice de Routage des Messages
+### 7.1 Matrice de Routage des Messages
 Le script de background écoute sur `browser.runtime.onMessage.addListener` et attend l'un des messages suivants :
 
 | Action de Message | Paramètres | Rôle Background | Réponse |
 |-------------------|------------|-----------------|---------|
-| `getTabStatus` | Aucun | Détecte si l'onglet actif contient un fichier supporté | `{ supported: true, fileName, mimeType }` ou `{ supported: false, reason }` |
+| `getTabStatus` | Aucun | Détecte si l'onglet actif contient un fichier supporté ou une page web capturable | `{ supported: true, fileName, mimeType }` ou `{ supported: false, isWebPage: true }` |
 | `uploadCurrentFile` | Aucun | Démarre le flux de téléchargement et d'upload résumable vers Drive | `{ success: true, fileName, link }` ou `{ success: false, error }` |
+| `captureWebPage` | `{ format: "pdf"\|"markdown" }` | Lance l'injection dynamique des content scripts pour capturer la page web actif | `{ success: true, fileName, mimeType }` ou `{ success: false, error }` |
+| `uploadCapturedBlob` | `{ blobData, fileName, mimeType }` | Upload vers Drive le Blob généré par les content scripts de capture | `{ success: true, fileName, link }` ou `{ success: false, error }` |
+| `FETCH_IMAGE` | `{ url }` | Proxy CORS : télécharge une image distante et la retourne sous forme de Data URL base64 | `{ success: true, dataUrl }` ou `{ success: false, error }` |
 | `getUploadStatus` | Aucun | Retourne l'état actuel d'un transfert actif pour cet onglet (reconnexion) | `{ phase: "downloading"\|"uploading"\|"success"\|"error", percent, fileName, mimeType, link, error }` ou `{ active: false }` |
 | `cancelUpload` | Aucun | Interrompt le transfert en cours (téléchargement ou upload) | `{ success: true }` |
 | `disconnect` | Aucun | Révoque le token Google OAuth2 et vide le stockage | `{ success: true }` |
@@ -187,7 +252,8 @@ Le script de background écoute sur `browser.runtime.onMessage.addListener` et a
 
 *Note de robustesse* : Le listener de messages retourne impérativement `true` de manière synchrone pour maintenir le port de communication ouvert lors des résolutions de promesses asynchrones.
 
-### 6.2 Contrôle Visuel et États UI
+### 7.2 Contrôle Visuel et États UI
+*   **Popup adaptative** : Si l'onglet actif héberge un fichier direct (PDF, image, etc.), l'UI affiche la carte de fichier et le bouton unique d'envoi. S'il s'agit d'une page HTML standard, l'UI s'adapte en affichant les deux boutons de capture (« Capture PDF » et « Capture Markdown »).
 *   **Onboarding** : Si la clé `hasSeenWelcome` n'existe pas dans le stockage local, un volet d'onboarding s'affiche en superposition avec un effet de verre dépoli (Glassmorphism réel permis par les orbes animées en CSS).
 *   **Bouton de déconnexion double-clic** : Pour éviter les déconnexions accidentelles sans utiliser d'alerte bloquante `confirm()` (interdite ou non recommandée en extension moderne), le bouton passe dans un état de confirmation temporaire pendant 3 secondes (devient ambre avec texte sombre et la mention `"Confirmer la déconnexion"`). Si l'utilisateur clique à nouveau, la déconnexion s'exécute, sinon l'état est réinitialisé.
 *   **Accessibilité Clavier** : Tous les éléments interactifs (`button`, `select`, `a`) gèrent la pseudo-classe `:focus-visible` pour afficher un anneau de sélection visuellement contrasté et esthétique pour les utilisateurs naviguant au clavier.

@@ -156,5 +156,29 @@
   "lang_gcf": {
     "message": "Kréyòl",
     "description": "Language selection: Guadeloupean Creole"
+  },
+  "popup_web_page": {
+    "message": "Página web detectada",
+    "description": "Shown when the current tab is a standard web page (no downloadable file)"
+  },
+  "popup_capture_ready": {
+    "message": "Capturar esta página como PDF o Markdown",
+    "description": "Status message when capture is available"
+  },
+  "popup_capture_in_progress": {
+    "message": "Capturando…",
+    "description": "Status during page capture"
+  },
+  "popup_btn_capture_pdf": {
+    "message": "Capturar como PDF",
+    "description": "Button label for PDF capture"
+  },
+  "popup_btn_capture_md": {
+    "message": "Capturar como Markdown",
+    "description": "Button label for Markdown capture"
+  },
+  "err_restricted_page": {
+    "message": "Esta página está restringida. Puedes permitir el acceso en la configuración de la extensión (about:addons).",
+    "description": "Error when content script injection fails on a restricted page"
   }
 }

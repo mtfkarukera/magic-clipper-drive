@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_ext_name__",
-  "version": "1.14.1",
+  "version": "1.15.0",
 
   "description": "__MSG_ext_description__",
   "default_locale": "en",
@@ -17,6 +17,7 @@
   },
   "permissions": [
     "identity",
+    "scripting",
     "storage",
     "tabs"
   ],

@@ -156,5 +156,29 @@
   "lang_gcf": {
     "message": "Kréyòl",
     "description": "Language selection: Guadeloupean Creole"
+  },
+  "popup_web_page": {
+    "message": "Đã phát hiện trang web",
+    "description": "Shown when the current tab is a standard web page (no downloadable file)"
+  },
+  "popup_capture_ready": {
+    "message": "Chụp trang này dưới dạng PDF hoặc Markdown",
+    "description": "Status message when capture is available"
+  },
+  "popup_capture_in_progress": {
+    "message": "Đang chụp trang…",
+    "description": "Status during page capture"
+  },
+  "popup_btn_capture_pdf": {
+    "message": "Chụp dạng PDF",
+    "description": "Button label for PDF capture"
+  },
+  "popup_btn_capture_md": {
+    "message": "Chụp dạng Markdown",
+    "description": "Button label for Markdown capture"
+  },
+  "err_restricted_page": {
+    "message": "Trang này bị hạn chế. Bạn có thể cho phép truy cập trong cài đặt tiện ích (about:addons).",
+    "description": "Error when content script injection fails on a restricted page"
   }
 }
