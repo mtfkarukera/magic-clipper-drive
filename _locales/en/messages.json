@@ -28,6 +28,11 @@
   "popup_local_banner_step2": { "message": "2. Select Magic Clipper for Google Drive", "description": "Local banner step 2" },
   "popup_local_banner_step3": { "message": "3. Under Permissions tab, enable 'Access local files'", "description": "Local banner step 3" },
   "popup_local_banner_link": { "message": "Consult the official Mozilla guide ↗", "description": "Local banner official guide link" },
+  "popup_drop_zone_title": { "message": "Local File Import", "description": "Title for drop zone section" },
+  "popup_drop_zone_text": { "message": "Drag and drop the file here to upload", "description": "Text in drop zone" },
+  "popup_drop_or": { "message": "or", "description": "Separator in drop zone" },
+  "popup_btn_browse": { "message": "Browse…", "description": "Browse button text" },
+  "popup_btn_open_tab_import": { "message": "Open importer in new tab ↗", "description": "Open full page importer button text" },
   "err_unsupported_type": { "message": "Unsupported file type.", "description": "Error: unsupported file type" },
   "err_quota": { "message": "Insufficient Google Drive storage space.", "description": "Error: out of quota" },
   "err_download_failed": {

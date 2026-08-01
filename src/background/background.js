@@ -970,7 +970,7 @@ async function uploadWithRetry(url, fileName, mimeType, tabId, uploadState) {
   let fileBlob;
   try {
     if (url.startsWith("file://")) {
-      fileBlob = await downloadLocalFileFromTab(tabId, uploadState);
+      throw new Error("ERR_LOCAL_FILE_IMPORT_REQUIRED");
     } else {
       fileBlob = await downloadFileWithProgress(url, mimeType, tabId, uploadState);
     }
@@ -1039,6 +1039,7 @@ async function disconnect() {
 
 const ERROR_I18N_MAP = {
   FILE_TOO_LARGE: "err_file_too_large",
+  ERR_LOCAL_FILE_IMPORT_REQUIRED: "err_local_file",
 
   TIMEOUT: "err_timeout",
   RATE_LIMIT_EXCEEDED: "err_rate_limit",
@@ -1342,6 +1343,83 @@ async function handleMessage(message) {
         return { success: false, error: "No active tab" };
       }
       return await handleUploadCurrentFile(tab);
+    }
+
+    case "uploadImportedFile": {
+      const tab = await getActiveTab();
+      const tabId = tab ? tab.id : 999999;
+
+      const base64 = message.base64Data;
+      const byteString = atob(base64);
+      const ab = new Uint8Array(byteString.length);
+      for (let i = 0; i < byteString.length; i++) {
+        ab[i] = byteString.charCodeAt(i);
+      }
+
+      const fileName = sanitizeFileName(message.fileName, '');
+      const mimeType = message.mimeType || 'application/octet-stream';
+      const fileBlob = new Blob([ab], { type: mimeType });
+
+      const uploadState = {
+        tabId,
+        phase: 'uploading',
+        percent: 0,
+        fileName,
+        mimeType,
+        url: 'file://imported',
+        sessionUrl: null,
+        bytesUploaded: 0,
+        totalSize: fileBlob.size,
+        controller: null,
+        uploadController: null,
+        link: null,
+        error: null,
+        startedAt: Date.now()
+      };
+      activeUploads[tabId] = uploadState;
+      await persistUploadState(uploadState);
+      notifyPopup('uploading', 0);
+
+      try {
+        let token = await getValidToken();
+        let folderId;
+        try {
+          folderId = await getOrCreateFolder(token);
+        } catch (err) {
+          if (err.message === 'RETRY_401') {
+            await browser.storage.local.remove(['accessToken', 'expiresAt']);
+            token = await getValidToken();
+            folderId = await getOrCreateFolder(token);
+          } else {
+            throw err;
+          }
+        }
+
+        const result = await uploadFileResumable(fileBlob, fileName, mimeType, token, folderId, tabId, uploadState);
+
+        uploadState.phase = 'success';
+        uploadState.link = result.webViewLink;
+        await persistUploadState(uploadState);
+        scheduleCleanup(tabId, uploadState);
+
+        const response = { success: true, fileName: result.name, link: result.webViewLink };
+        browser.runtime.sendMessage({
+          action: 'uploadComplete', ...response
+        }).catch(() => {});
+        return response;
+      } catch (e) {
+        const errorMsg = errorToI18nMessage(e);
+        uploadState.phase = 'error';
+        uploadState.error = errorMsg;
+        await persistUploadState(uploadState);
+        scheduleCleanup(tabId, uploadState);
+
+        const response = { success: false, error: errorMsg };
+        browser.runtime.sendMessage({
+          action: 'uploadComplete', ...response
+        }).catch(() => {});
+        return response;
+      }
     }
 
     // ----- CAPTURE DE PAGE WEB (Sprint 15) -----

@@ -1,45 +1,130 @@
 {
-  "ext_name": { "message": "Magic Clipper para Google Drive", "description": "Extension name" },
-  "ext_description": { "message": "Envía cualquier archivo que Firefox pueda mostrar directamente a tu Google Drive con un solo clic.", "description": "Extension description" },
-  "popup_auth_loading": { "message": "Conectando…", "description": "Auth status: loading" },
-  "popup_auth_connected": { "message": "Conectado", "description": "Auth status: connected" },
-  "popup_auth_error": { "message": "No conectado", "description": "Auth status: error" },
-  "popup_detecting": { "message": "Analizando pestaña…", "description": "Status when analyzing the current tab" },
-  "popup_idle_label": { "message": "ARCHIVO DETECTADO", "description": "Label above the detected file" },
-  "popup_no_file": { "message": "Ningún archivo detectado", "description": "Message when no file is detected" },
-  "popup_unsupported": { "message": "Esta pestaña no contiene un archivo compatible", "description": "Message when the file type is not supported" },
-  "popup_local_file": { "message": "Los archivos locales no son compatibles", "description": "Message when a local file is detected" },
-  "popup_btn_upload": { "message": "⬆️ Enviar a Google Drive", "description": "Upload button text" },
-  "popup_btn_uploading": { "message": "Enviando…", "description": "Upload button text when sending" },
-  "popup_btn_disconnect": { "message": "Desconectar", "description": "Disconnect button text" },
-  "popup_btn_disconnect_confirm": { "message": "Confirmar desconexión", "description": "Disconnect button confirmation state" },
-  "popup_link_view": { "message": "📂 Ver en Google Drive", "description": "Link to view the uploaded file" },
+  "ext_name": {
+    "message": "Magic Clipper para Google Drive",
+    "description": "Extension name"
+  },
+  "ext_description": {
+    "message": "Envía cualquier archivo que Firefox pueda mostrar directamente a tu Google Drive con un solo clic.",
+    "description": "Extension description"
+  },
+  "popup_auth_loading": {
+    "message": "Conectando…",
+    "description": "Auth status: loading"
+  },
+  "popup_auth_connected": {
+    "message": "Conectado",
+    "description": "Auth status: connected"
+  },
+  "popup_auth_error": {
+    "message": "No conectado",
+    "description": "Auth status: error"
+  },
+  "popup_detecting": {
+    "message": "Analizando pestaña…",
+    "description": "Status when analyzing the current tab"
+  },
+  "popup_idle_label": {
+    "message": "ARCHIVO DETECTADO",
+    "description": "Label above the detected file"
+  },
+  "popup_no_file": {
+    "message": "Ningún archivo detectado",
+    "description": "Message when no file is detected"
+  },
+  "popup_unsupported": {
+    "message": "Esta pestaña no contiene un archivo compatible",
+    "description": "Message when the file type is not supported"
+  },
+  "popup_local_file": {
+    "message": "Los archivos locales no son compatibles",
+    "description": "Message when a local file is detected"
+  },
+  "popup_btn_upload": {
+    "message": "⬆️ Enviar a Google Drive",
+    "description": "Upload button text"
+  },
+  "popup_btn_uploading": {
+    "message": "Enviando…",
+    "description": "Upload button text when sending"
+  },
+  "popup_btn_disconnect": {
+    "message": "Desconectar",
+    "description": "Disconnect button text"
+  },
+  "popup_btn_disconnect_confirm": {
+    "message": "Confirmar desconexión",
+    "description": "Disconnect button confirmation state"
+  },
+  "popup_link_view": {
+    "message": "📂 Ver en Google Drive",
+    "description": "Link to view the uploaded file"
+  },
   "popup_success": {
     "message": "¡$FILE_NAME$ enviado!",
     "description": "Mensaje de éxito con nombre de archivo",
     "placeholders": {
-      "file_name": { "content": "$1" }
+      "file_name": {
+        "content": "$1"
+      }
     }
   },
-  "err_local_file": { "message": "Los archivos locales no son compatibles. Abre el archivo desde una URL en línea.", "description": "Error: local file" },
-  "err_local_file_permission_needed": { "message": "El acceso a archivos locales requiere su permiso en la configuración de la extensión.", "description": "Error: local file permission needed" },
-  "popup_local_banner_title": { "message": "Permiso requerido para archivos locales", "description": "Local banner title" },
-  "popup_local_banner_step1": { "message": "1. Abre about:addons en una nueva pestaña", "description": "Local banner step 1" },
-  "popup_local_banner_step2": { "message": "2. Selecciona Magic Clipper for Google Drive", "description": "Local banner step 2" },
-  "popup_local_banner_step3": { "message": "3. En Permisos, activa «Acceder a archivos locales»", "description": "Local banner step 3" },
-  "popup_local_banner_link": { "message": "Consultar la guía oficial de Mozilla ↗", "description": "Local banner official guide link" },
-  "err_unsupported_type": { "message": "Tipo de archivo no compatible.", "description": "Error: unsupported file type" },
-  "err_quota": { "message": "Espacio de almacenamiento de Google Drive insuficiente.", "description": "Error: out of quota" },
+  "err_local_file": {
+    "message": "Los archivos locales no son compatibles. Abre el archivo desde una URL en línea.",
+    "description": "Error: local file"
+  },
+  "err_local_file_permission_needed": {
+    "message": "El acceso a archivos locales requiere su permiso en la configuración de la extensión.",
+    "description": "Error: local file permission needed"
+  },
+  "popup_local_banner_title": {
+    "message": "Permiso requerido para archivos locales",
+    "description": "Local banner title"
+  },
+  "popup_local_banner_step1": {
+    "message": "1. Abre about:addons en una nueva pestaña",
+    "description": "Local banner step 1"
+  },
+  "popup_local_banner_step2": {
+    "message": "2. Selecciona Magic Clipper for Google Drive",
+    "description": "Local banner step 2"
+  },
+  "popup_local_banner_step3": {
+    "message": "3. En Permisos, activa «Acceder a archivos locales»",
+    "description": "Local banner step 3"
+  },
+  "popup_local_banner_link": {
+    "message": "Consultar la guía oficial de Mozilla ↗",
+    "description": "Local banner official guide link"
+  },
+  "err_unsupported_type": {
+    "message": "Tipo de archivo no compatible.",
+    "description": "Error: unsupported file type"
+  },
+  "err_quota": {
+    "message": "Espacio de almacenamiento de Google Drive insuficiente.",
+    "description": "Error: out of quota"
+  },
   "err_download_failed": {
     "message": "No se pudo descargar el archivo (HTTP $STATUS$).",
     "description": "Error de descarga con código HTTP",
     "placeholders": {
-      "status": { "content": "$1" }
+      "status": {
+        "content": "$1"
+      }
     }
   },
-  "err_auth_failed": { "message": "Error en la autenticación de Google.", "description": "Error: authentication failed" },
-  "err_network": { "message": "Error de red. Comprueba tu conexión a Internet.", "description": "Error: network issue" },
-  "err_upload_failed": { "message": "Error en la carga. Inténtalo de nuevo.", "description": "Error: upload failed" },
+  "err_auth_failed": {
+    "message": "Error en la autenticación de Google.",
+    "description": "Error: authentication failed"
+  },
+  "err_network": {
+    "message": "Error de red. Comprueba tu conexión a Internet.",
+    "description": "Error: network issue"
+  },
+  "err_upload_failed": {
+    "message": "Error en la carga. Inténtalo de nuevo.",
+    "description": "Error: upload failed"
+  },
   "lang_select_label": {
     "message": "Idioma"
   },
@@ -87,32 +172,48 @@
     "message": "Descargando… ($PERCENT$%)",
     "description": "Progress state: downloading from web",
     "placeholders": {
-      "percent": { "content": "$1" }
+      "percent": {
+        "content": "$1"
+      }
     }
   },
   "popup_state_downloading_eta": {
     "message": "Descargando… ($PERCENT$%) — quedan $ETA$ ($SPEED$)",
     "description": "Progress state with ETA: downloading from web",
     "placeholders": {
-      "percent": { "content": "$1" },
-      "eta": { "content": "$2" },
-      "speed": { "content": "$3" }
+      "percent": {
+        "content": "$1"
+      },
+      "eta": {
+        "content": "$2"
+      },
+      "speed": {
+        "content": "$3"
+      }
     }
   },
   "popup_state_uploading": {
     "message": "Enviando a Drive… ($PERCENT$%)",
     "description": "Progress state: uploading to Drive",
     "placeholders": {
-      "percent": { "content": "$1" }
+      "percent": {
+        "content": "$1"
+      }
     }
   },
   "popup_state_uploading_eta": {
     "message": "Enviando a Drive… ($PERCENT$%) — quedan $ETA$ ($SPEED$)",
     "description": "Progress state with ETA: uploading to Drive",
     "placeholders": {
-      "percent": { "content": "$1" },
-      "eta": { "content": "$2" },
-      "speed": { "content": "$3" }
+      "percent": {
+        "content": "$1"
+      },
+      "eta": {
+        "content": "$2"
+      },
+      "speed": {
+        "content": "$3"
+      }
     }
   },
   "popup_state_action_cancel_announce": {
@@ -194,5 +295,25 @@
   "err_restricted_page": {
     "message": "Esta página está restringida. Puedes permitir el acceso en la configuración de la extensión (about:addons).",
     "description": "Error when content script injection fails on a restricted page"
+  },
+  "popup_drop_zone_title": {
+    "message": "Local File Import",
+    "description": "Title for drop zone section"
+  },
+  "popup_drop_zone_text": {
+    "message": "Drag and drop the file here to upload",
+    "description": "Text in drop zone"
+  },
+  "popup_drop_or": {
+    "message": "or",
+    "description": "Separator in drop zone"
+  },
+  "popup_btn_browse": {
+    "message": "Browse…",
+    "description": "Browse button text"
+  },
+  "popup_btn_open_tab_import": {
+    "message": "Open importer in new tab ↗",
+    "description": "Open full page importer button text"
   }
 }

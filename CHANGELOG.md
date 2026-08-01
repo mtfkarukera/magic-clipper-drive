@@ -5,6 +5,20 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.22.0] — 2026-08-02
+
+### Ajouté
+- 📥 **Importation Manuelle de Fichiers (Drag & Drop & Onglet Dédié)** :
+  - **Zone de Glisser-Déposer (Drag & Drop)** : Intégration d'une zone de dépôt directement dans la popup pour importer et téléverser n'importe quel fichier local (PDF, image, audio, etc.) vers Google Drive sans restriction de sécurité navigateur.
+  - **Onglet d'Importation Dédié** : Bouton d'ouverture `popup.html?mode=import` permettant d'utiliser un sélecteur de fichier classique (`<input type="file">`) dans une page complète sans risquer la fermeture intempestive de la popup.
+  - **Pipeline `uploadImportedFile`** : Conversion base64/Blob transparente dans le background script avec raccordement au moteur d'upload résumable chunké.
+
+### Corrigé
+- 🐛 **Correction du badge de statut Auth ("Non connecté")** :
+  - Correction d'un comportement où toute erreur d'upload (ex: fichier restreint ou erreur réseau) faisait passer le badge au rouge "Non connecté". Le badge conserve désormais son état vert "Connecté" si la clé `accessToken` est toujours valide.
+- 🔒 **Contournement des restrictions Firefox sur les PDF locaux** :
+  - Reconstitution propre du flux d'importation pour contourner le blocage d'injection de scripts (`executeScript`) sur le lecteur PDF interne de Firefox (`resource://pdf.js/`).
+
 ## [1.21.1] — 2026-08-02
 
 ### Corrigé

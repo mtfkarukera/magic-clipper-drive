@@ -64,6 +64,24 @@
     </div>
   </section>
 
+  <!-- ACTION IMPORTATION MANUELLE (Drag & Drop / Input File) -->
+  <section class="action-section hidden" id="drop-zone-section">
+    <div id="drop-zone" class="drop-zone">
+      <span class="drop-icon" aria-hidden="true">📥</span>
+      <p class="drop-text" data-i18n="popup_drop_zone_text">Glissez-déposez le fichier ici pour l'envoyer</p>
+      <span class="drop-or" data-i18n="popup_drop_or">ou</span>
+      <label for="local-file-input" class="btn secondary-btn import-btn">
+        <span data-i18n="popup_btn_browse">Parcourir…</span>
+        <input type="file" id="local-file-input" class="sr-only" />
+      </label>
+    </div>
+    <div class="tab-import-row">
+      <button id="open-tab-import-btn" class="btn text-btn" data-i18n="popup_btn_open_tab_import">
+        Ouvrir l'importateur dans un nouvel onglet ↗
+      </button>
+    </div>
+  </section>
+
   <!-- ACTION CAPTURE — Capture de page web (PDF/Markdown) -->
   <section class="action-section hidden" id="capture-section">
     <div class="capture-buttons">

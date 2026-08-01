@@ -54,6 +54,12 @@ const captureLinkRow          = document.getElementById('capture-link-row');
 const captureLink             = document.getElementById('capture-link');
 const localFileBanner         = document.getElementById('local-file-banner');
 
+// --- Éléments d'importation manuelle (Sprint 17) ---
+const dropZoneSection         = document.getElementById('drop-zone-section');
+const dropZone                = document.getElementById('drop-zone');
+const localFileInput          = document.getElementById('local-file-input');
+const openTabImportBtn        = document.getElementById('open-tab-import-btn');
+
 // #file-icon contient des emoji décoratifs — masquer aux lecteurs d'écran (A-05)
 fileIcon.setAttribute('aria-hidden', 'true');
 
@@ -290,6 +296,19 @@ async function initTabStatus() {
     updateDisconnectVisibility(false);
   }
 
+  // Mode importation manuelle dans un nouvel onglet
+  const isImportMode = location.search.includes('mode=import');
+  if (isImportMode) {
+    directUploadSection.classList.add('hidden');
+    captureSection.classList.add('hidden');
+    if (dropZoneSection) dropZoneSection.classList.remove('hidden');
+    if (openTabImportBtn) openTabImportBtn.classList.add('hidden');
+    fileIcon.textContent = "📥";
+    fileName.textContent = t("popup_drop_zone_title");
+    setStatusLive(hasToken ? t("popup_drop_zone_title") : t("popup_disconnected_status"));
+    return;
+  }
+
   // 2. Déterminer l'éligibilité du fichier sur l'onglet actif
   try {
     const result = await Promise.race([
@@ -309,33 +328,56 @@ async function initTabStatus() {
       if (localFileBanner) localFileBanner.classList.add('hidden');
 
       if (result.supported) {
-        // --- MODE FICHIER DIRECT (existant, inchangé) ---
-        directUploadSection.classList.remove('hidden');
-        captureSection.classList.add('hidden');
-        fileIcon.textContent = getIconForMime(result.mimeType);
-        fileName.textContent = result.fileName;
-        fileInfo.classList.remove('warning');
-        uploadBtn.disabled = false;
-        if (hasToken) {
-          setStatusLive(t('popup_idle_label'));
+        if (result.isLocalFile) {
+          // --- MODE FICHIER LOCAL (Sprint 17) ---
+          directUploadSection.classList.add('hidden');
+          captureSection.classList.add('hidden');
+          if (dropZoneSection) dropZoneSection.classList.remove('hidden');
+          fileIcon.textContent = getIconForMime(result.mimeType);
+          fileName.textContent = result.fileName;
+          fileInfo.classList.remove('warning');
+          if (hasToken) {
+            setStatusLive(t('popup_drop_zone_title'));
+          } else {
+            setStatusLive(t('popup_disconnected_status'));
+          }
         } else {
-          setStatusLive(t('popup_disconnected_status'));
+          // --- MODE FICHIER DIRECT DISTANT ---
+          directUploadSection.classList.remove('hidden');
+          captureSection.classList.add('hidden');
+          if (dropZoneSection) dropZoneSection.classList.add('hidden');
+          fileIcon.textContent = getIconForMime(result.mimeType);
+          fileName.textContent = result.fileName;
+          fileInfo.classList.remove('warning');
+          uploadBtn.disabled = false;
+          if (hasToken) {
+            setStatusLive(t('popup_idle_label'));
+          } else {
+            setStatusLive(t('popup_disconnected_status'));
+          }
         }
       } else if (result.reason === 'local_file' || result.reason === 'private_network' || result.reason === 'file_too_large') {
-        // --- MODE ERREUR SPÉCIFIQUE (existant, inchangé) ---
-        directUploadSection.classList.remove('hidden');
-        captureSection.classList.add('hidden');
-        fileInfo.classList.add('warning');
-        uploadBtn.disabled = true;
+        // --- MODE ERREUR SPÉCIFIQUE ---
         if (result.reason === 'local_file') {
+          // Proposer le Drag & Drop si local_file
+          directUploadSection.classList.add('hidden');
+          captureSection.classList.add('hidden');
+          if (dropZoneSection) dropZoneSection.classList.remove('hidden');
           fileName.textContent = t('popup_local_file');
           setStatusLive(t('err_local_file'));
-        } else if (result.reason === 'private_network') {
-          fileName.textContent = t('popup_unsupported');
-          setStatusLive(t('err_private_network'));
         } else {
-          fileName.textContent = t('popup_unsupported');
-          setStatusLive(t('err_file_too_large'));
+          directUploadSection.classList.remove('hidden');
+          captureSection.classList.add('hidden');
+          if (dropZoneSection) dropZoneSection.classList.add('hidden');
+          fileInfo.classList.add('warning');
+          uploadBtn.disabled = true;
+          if (result.reason === 'private_network') {
+            fileName.textContent = t('popup_unsupported');
+            setStatusLive(t('err_private_network'));
+          } else {
+            fileName.textContent = t('popup_unsupported');
+            setStatusLive(t('err_file_too_large'));
+          }
         }
       } else if (result.reason === 'system_page') {
         // --- MODE PAGE SYSTÈME (about:*, moz-extension:*) ---
@@ -483,21 +525,29 @@ uploadBtn.addEventListener('click', async () => {
         uploadBtn.disabled = false;
       }, 5000);
     } else {
-      // Afficher l'erreur EN PREMIER pour éviter qu'un setTransferState ultérieur ne l'écrase
-      setAuthBadge('error', t('popup_auth_error'));
+      // Afficher l'erreur sans faussement déclarer la déconnexion
+      const { accessToken } = await browser.storage.local.get('accessToken');
+      if (!accessToken || response.error === t('err_auth_failed')) {
+        setAuthBadge('error', t('popup_auth_error'));
+      } else {
+        setAuthBadge('success', t('popup_auth_connected'));
+      }
       setStatusLive(response.error);
       uploadBtn.disabled = false;
-      // Vérifier l'auth pour décider de la visibilité du bouton déconnexion
-      const { accessToken } = await browser.storage.local.get('accessToken');
       updateDisconnectVisibility(!!accessToken);
     }
 
   } catch (e) {
     setTransferState('idle', 0);
-    setAuthBadge('error', t('popup_auth_error'));
+    const { accessToken } = await browser.storage.local.get('accessToken');
+    if (!accessToken) {
+      setAuthBadge('error', t('popup_auth_error'));
+    } else {
+      setAuthBadge('success', t('popup_auth_connected'));
+    }
     setStatusLive(t('err_upload_failed'));
     uploadBtn.disabled = false;
-    updateDisconnectVisibility(false);
+    updateDisconnectVisibility(!!accessToken);
   }
 });
 
@@ -684,3 +734,113 @@ browser.runtime.onMessage.addListener((message) => {
     }
   }
 });
+
+// ----------------------------------------------------------
+// LOGIQUE IMPORTATION MANUELLE — Drag & Drop / Input File (Sprint 17)
+// ----------------------------------------------------------
+
+async function handleFileImport(file) {
+  if (!file || isUploading) return;
+
+  const MAX_SIZE = 200 * 1024 * 1024; // 200 Mo
+  if (file.size > MAX_SIZE) {
+    setStatusLive(t('err_file_too_large'));
+    return;
+  }
+
+  isUploading = true;
+  setTransferState('downloading', 10);
+  setStatusLive(t('popup_btn_uploading'));
+
+  const reader = new FileReader();
+  reader.onerror = async () => {
+    isUploading = false;
+    setTransferState('idle', 0);
+    const { accessToken } = await browser.storage.local.get('accessToken');
+    if (!accessToken) setAuthBadge('error', t('popup_auth_error'));
+    setStatusLive(t('err_download_failed'));
+  };
+
+  reader.onload = async () => {
+    try {
+      const base64Data = reader.result.split(',')[1];
+      const response = await browser.runtime.sendMessage({
+        action: 'uploadImportedFile',
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        base64Data: base64Data
+      });
+
+      isUploading = false;
+      setTransferState('idle', 0);
+
+      if (response && response.success) {
+        setAuthBadge('success', t('popup_auth_connected'));
+        setStatusLive(t('popup_success', { FILE_NAME: response.fileName }));
+        if (response.link && response.link.startsWith('https://drive.google.com/')) {
+          driveLink.href = response.link;
+          driveLinkRow.classList.remove('hidden');
+          driveLink.focus();
+        }
+      } else {
+        const { accessToken } = await browser.storage.local.get('accessToken');
+        if (!accessToken) setAuthBadge('error', t('popup_auth_error'));
+        setStatusLive(response ? response.error : t('err_upload_failed'));
+      }
+    } catch (err) {
+      isUploading = false;
+      setTransferState('idle', 0);
+      const { accessToken } = await browser.storage.local.get('accessToken');
+      if (!accessToken) setAuthBadge('error', t('popup_auth_error'));
+      setStatusLive(t('err_upload_failed'));
+    }
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// Gestionnaires d'événements Drag & Drop
+if (dropZone) {
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add('drag-over');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('drag-over');
+    }, false);
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files && files.length > 0) {
+      handleFileImport(files[0]);
+    }
+  });
+}
+
+// Input file change handler
+if (localFileInput) {
+  localFileInput.addEventListener('change', (e) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFileImport(files[0]);
+    }
+  });
+}
+
+// Bouton ouvrir l'importateur dans un nouvel onglet
+if (openTabImportBtn) {
+  openTabImportBtn.addEventListener('click', () => {
+    browser.tabs.create({
+      url: browser.runtime.getURL('src/popup/popup.html?mode=import')
+    });
+  });
+}
