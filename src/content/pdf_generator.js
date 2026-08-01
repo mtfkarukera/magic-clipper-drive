@@ -103,6 +103,22 @@ function flattenTable(tableNode) {
 window.MC4GDPdfGenerator = {
 
   /**
+   * Sanitise une chaîne pour éviter le débordement horizontal jsPDF (espaces insécables & mots géants)
+   */
+  _sanitizeText(str) {
+    if (!str) return '';
+    // 1. Liste blanche : ne conserver que les caractères imprimables courants
+    //    ASCII imprimable (0x20-0x7E), lettres accentuées latines (À-ÿ étendu),
+    //    ponctuation courante, symboles monétaires, retours à la ligne
+    let cleaned = str.replace(/[^\x20-\x7E\u00C0-\u024F\u1E00-\u1EFF.,;:!?'"«»""''()\-–—/\\@#€$£¥%&*+=<>{}[\]°…\n²³¹]/g, ' ');
+    // 2. Normaliser les retours à la ligne et espaces multiples
+    cleaned = cleaned.replace(/[\r\n\t]+/g, ' ').replace(/ {2,}/g, ' ');
+    // 3. Sécurité : forcer une rupture tous les 45 caractères ininterrompus
+    cleaned = cleaned.replace(/(\S{45})/g, '$1 ');
+    return cleaned.trim();
+  },
+
+  /**
    * Génère un PDF à partir du container HTML du Serializer.
    *
    * @param {HTMLElement} container - Container avec CSS Reader Mode + data URI images.
@@ -159,16 +175,20 @@ window.MC4GDPdfGenerator = {
     // --- Helpers ---
     const newPage = () => { doc.addPage(); y = m; };
     const space = (needed) => { if (y + needed > ph - m) newPage(); };
+    const sanitizeText = (str) => this._sanitizeText(str);
 
     const addText = (text, size, bold, spacing, color) => {
       if (!text) return;
+      const cleanStr = sanitizeText(text);
       color = color || [50, 50, 50];
       doc.setFontSize(size);
       doc.setFont('helvetica', bold ? 'bold' : 'normal');
       doc.setTextColor(color[0], color[1], color[2]);
-      const lines = doc.splitTextToSize(text, uw);
+      const lines = doc.splitTextToSize(cleanStr, uw);
       const lh = size * 0.4;
-      for (const line of lines) {
+      for (const rawLine of lines) {
+        // Double-sécurité anti-débordement horizontal
+        const line = sanitizeText(rawLine);
         space(lh);
         doc.text(line, m, y);
         y += lh;
@@ -304,7 +324,7 @@ window.MC4GDPdfGenerator = {
       const cellLines = [];
       let maxLines = 1;
       for (let c = 0; c < maxCols; c++) {
-        const txt = (row[c] || '').toString();
+        const txt = this._sanitizeText((row[c] || '').toString());
         const avail = colW[c] - cellPadX * 2;
         const lines = doc.splitTextToSize(txt, Math.max(avail, 5));
         cellLines.push(lines);

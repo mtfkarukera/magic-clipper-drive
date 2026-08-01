@@ -1,4 +1,4 @@
-# Magic Clipper for Google Drive ![Version 1.16.0](https://img.shields.io/badge/version-1.16.0-blue.svg) ![Licence MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-brightgreen.svg)
+# Magic Clipper for Google Drive ![Version 1.17.0](https://img.shields.io/badge/version-1.17.0-blue.svg) ![Licence MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-brightgreen.svg)
 
 
 Envoyez n'importe quel fichier que Firefox peut afficher directement sur votre Google Drive en un seul clic.
@@ -8,7 +8,7 @@ Envoyez n'importe quel fichier que Firefox peut afficher directement sur votre G
 | Fonctionnalité | Détails |
 | --- | --- |
 | Détection automatique | Analyse de l'URL et du type de contenu de l'onglet actif. |
-| Capture de page web | Convertit toute page web en PDF (Dual Mode : PDF Article épuré via Readability.js vs PDF Visuel 1:1) ou Markdown (via Turndown.js) avant envoi vers Drive. |
+| Capture de page web | Convertit toute page web en Document PDF structuré (moteur autonome jsPDF avec blindage par liste blanche Unicode anti-débordement et conservation de l'image de couverture) ou Markdown (via Turndown.js) avant envoi vers Drive. |
 | 32 Formats supportés | PDF, PNG, JPG, JPEG, GIF, WEBP, SVG, AVIF, BMP, ICO, TIFF, MP3, MP4, WEBM, OGG, WAV, AAC, FLAC, M4A, MOV, MPEG, TXT, MD, CSV, JSON, DOCX, XLSX, PPTX, ZIP, TAR, GZ, EPUB. |
 | Upload résumable chunké | Gestion robuste des fichiers volumineux (jusqu'à 200 Mo) via upload par morceaux de 8 Mo avec reprise réseau automatique. |
 | Barre de progression | Indication en temps réel de l'état du téléchargement et du téléversement avec pourcentage, débit instantané et estimation du temps restant (ETA). |

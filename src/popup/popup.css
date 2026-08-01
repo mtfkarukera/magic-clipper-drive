@@ -580,14 +580,18 @@ a:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 }
 
 .capture-btn {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 10px 16px;
+  width: 100%;
+  box-sizing: border-box;
   background-color: var(--bg-element);
   border: 1px solid var(--border-color);
   color: var(--text-main);
@@ -611,12 +615,15 @@ a:focus-visible {
   font-size: 20px;
   line-height: 1;
   flex-shrink: 0;
+  width: 24px;
+  text-align: center;
 }
 
 .btn-text-wrapper {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex-grow: 1;
 }
 
 .btn-title {

@@ -169,21 +169,13 @@
     "message": "Capture en cours…",
     "description": "Status during page capture"
   },
-  "popup_btn_capture_pdf_article": {
-    "message": "PDF Article",
-    "description": "Button label for Clean Article PDF capture"
+  "popup_btn_capture_pdf": {
+    "message": "Document PDF",
+    "description": "Button label for PDF capture"
   },
-  "popup_desc_capture_pdf_article": {
-    "message": "Contenu principal épuré",
-    "description": "Description for Clean Article PDF capture"
-  },
-  "popup_btn_capture_pdf_visual": {
-    "message": "PDF Visuel",
-    "description": "Button label for Visual 1:1 PDF capture"
-  },
-  "popup_desc_capture_pdf_visual": {
-    "message": "Page complète (mise en page 1:1)",
-    "description": "Description for Visual 1:1 PDF capture"
+  "popup_desc_capture_pdf": {
+    "message": "Mise en page nettoyée & images",
+    "description": "Description for PDF capture"
   },
   "popup_btn_capture_md": {
     "message": "Markdown",

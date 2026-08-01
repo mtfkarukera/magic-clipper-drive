@@ -1017,7 +1017,7 @@ async function handleCaptureWebPage(tab, format) {
   try {
     // Déterminer la séquence d'injection selon le format
     let scripts;
-    if (format === 'pdf_article' || format === 'pdf' || format === 'pdf_visual') {
+    if (format === 'pdf' || format === 'pdf_clean' || format === 'pdf_article' || format === 'pdf_visual') {
       scripts = [
         'lib/Readability.js',
         'lib/jspdf.umd.min.js',

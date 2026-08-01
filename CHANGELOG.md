@@ -5,6 +5,17 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.17.0] — 2026-08-01
+
+### Modifié
+- 🛡️ **Fix Anti-Débordement Horizontal PDF** : Implémentation d'un blindage par liste blanche Unicode dans `_sanitizeText` (`pdf_generator.js`). Seuls les caractères ASCII imprimables et lettres accentuées latines sont conservés, tout espace d'imprimerie exotique ou invisible (ex: sur Légifrance) est converti en espace simple ASCII 0x20. Élimination totale des débordements de texte hors page.
+- 🎯 **Interface Popup Épurée** : Restitution des 2 boutons d'action définitifs et maîtrisés (📄 Document PDF et 📝 Markdown).
+- 🧹 Suppression intégrale de l'expérimentation `saveAsPDF` qui forçait un dialogue d'impression local OS inadapté à l'upload cloud direct.
+
+### Corrige
+- 🐛 Résolution d'un problème de portée (`ReferenceError: sanitizeText is not defined`) dans la méthode `_renderTable` du générateur PDF.
+- 🎨 Alignement et centrage visuel optimisés des cartes d'action de la popup.
+
 ## [1.16.0] — 2026-08-01
 
 ### Ajouté

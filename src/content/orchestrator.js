@@ -15,11 +15,9 @@ window.__mc4gd_orchestrator = true;
           const wrapperClone = document.body.cloneNode(true);
           
           // 3. Génération dans le format demandé
-          if (format === 'pdf_article' || format === 'pdf') {
-            const container = await window.MC4GDSerializer.process(wrapperClone);
-            resultData = await window.MC4GDPdfGenerator.generate(container);
-          } else if (format === 'pdf_visual') {
-            // Mode Visuel (1:1) : Utilise le fallback DOM complet (body nettoyé) pour tout conserver (encadrés, titrages, structures)
+          if (format === 'pdf_clean' || format === 'pdf_article' || format === 'pdf' || format === 'pdf_visual') {
+            // MOTEUR PDF PRINCIPAL : _cleanDomFallback + jsPDF + fix anti-débordement
+            // Conserve l'image de couverture principale (Hero Image) et la totalité du texte juridique sans découpe sémantique
             const visualContainer = await window.MC4GDSerializer.getVisualContainer(wrapperClone);
             resultData = await window.MC4GDPdfGenerator.generate(visualContainer);
           } else if (format === 'md') {
