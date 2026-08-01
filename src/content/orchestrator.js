@@ -14,15 +14,16 @@ window.__mc4gd_orchestrator = true;
           // 1. Cloner le body pour isoler les manipulations du DOM
           const wrapperClone = document.body.cloneNode(true);
           
-          // 2. Traitement Serializer -> Container HTML autonome
-          const container = await window.MC4GDSerializer.process(wrapperClone);
-          
-          let resultData;
-          
           // 3. Génération dans le format demandé
-          if (format === 'pdf') {
+          if (format === 'pdf_article' || format === 'pdf') {
+            const container = await window.MC4GDSerializer.process(wrapperClone);
             resultData = await window.MC4GDPdfGenerator.generate(container);
+          } else if (format === 'pdf_visual') {
+            // Mode Visuel (1:1) : Utilise le fallback DOM complet (body nettoyé) pour tout conserver (encadrés, titrages, structures)
+            const visualContainer = await window.MC4GDSerializer.getVisualContainer(wrapperClone);
+            resultData = await window.MC4GDPdfGenerator.generate(visualContainer);
           } else if (format === 'md') {
+            const container = await window.MC4GDSerializer.process(wrapperClone);
             resultData = window.MC4GDMdGenerator.generate(container);
           } else {
             throw new Error(`Format non supporté: ${format}`);

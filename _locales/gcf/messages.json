@@ -189,13 +189,29 @@
     "message": "Ka kaptiré…",
     "description": "Status during page capture"
   },
-  "popup_btn_capture_pdf": {
-    "message": "Kaptiré an PDF",
-    "description": "Button label for PDF capture"
+  "popup_btn_capture_pdf_article": {
+    "message": "PDF Artik",
+    "description": "Button label for Clean Article PDF capture"
+  },
+  "popup_desc_capture_pdf_article": {
+    "message": "Kontni prensipal pwòp san piblisite",
+    "description": "Description for Clean Article PDF capture"
+  },
+  "popup_btn_capture_pdf_visual": {
+    "message": "PDF Vizyèl",
+    "description": "Button label for Visual 1:1 PDF capture"
+  },
+  "popup_desc_capture_pdf_visual": {
+    "message": "Paj konplè avèk menm miz an paj-la",
+    "description": "Description for Visual 1:1 PDF capture"
   },
   "popup_btn_capture_md": {
-    "message": "Kaptiré an Markdown",
+    "message": "Markdown",
     "description": "Button label for Markdown capture"
+  },
+  "popup_desc_capture_md": {
+    "message": "Tèks moso & kabane pou nòt/IA",
+    "description": "Description for Markdown capture"
   },
   "err_restricted_page": {
     "message": "Paj-la rèstren. Ou pé otorizé aksè andidàn paramèt extension-la (about:addons).",

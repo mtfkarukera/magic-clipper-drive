@@ -169,13 +169,29 @@
     "message": "Capturando…",
     "description": "Status during page capture"
   },
-  "popup_btn_capture_pdf": {
-    "message": "Capturar como PDF",
-    "description": "Button label for PDF capture"
+  "popup_btn_capture_pdf_article": {
+    "message": "PDF Artículo",
+    "description": "Button label for Clean Article PDF capture"
+  },
+  "popup_desc_capture_pdf_article": {
+    "message": "Contenido principal limpio sin anuncios",
+    "description": "Description for Clean Article PDF capture"
+  },
+  "popup_btn_capture_pdf_visual": {
+    "message": "PDF Visual",
+    "description": "Button label for Visual 1:1 PDF capture"
+  },
+  "popup_desc_capture_pdf_visual": {
+    "message": "Página completa con diseño exacto",
+    "description": "Description for Visual 1:1 PDF capture"
   },
   "popup_btn_capture_md": {
-    "message": "Capturar como Markdown",
+    "message": "Markdown",
     "description": "Button label for Markdown capture"
+  },
+  "popup_desc_capture_md": {
+    "message": "Texto plano y tablas para notas/IA",
+    "description": "Description for Markdown capture"
   },
   "err_restricted_page": {
     "message": "Esta página está restringida. Puedes permitir el acceso en la configuración de la extensión (about:addons).",

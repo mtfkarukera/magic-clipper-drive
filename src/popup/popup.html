@@ -51,13 +51,26 @@
   <!-- ACTION CAPTURE — Capture de page web (PDF/Markdown) -->
   <section class="action-section hidden" id="capture-section">
     <div class="capture-buttons">
-      <button id="capture-pdf-btn" class="btn capture-btn" disabled>
-        <span aria-hidden="true">📄</span>
-        <span data-i18n="popup_btn_capture_pdf">Capturer en PDF</span>
+      <button id="capture-pdf-article-btn" class="btn capture-btn" disabled>
+        <span class="btn-icon" aria-hidden="true">📄</span>
+        <div class="btn-text-wrapper">
+          <span class="btn-title" data-i18n="popup_btn_capture_pdf_article">PDF Article</span>
+          <span class="btn-desc" data-i18n="popup_desc_capture_pdf_article">Contenu principal épuré</span>
+        </div>
+      </button>
+      <button id="capture-pdf-visual-btn" class="btn capture-btn" disabled>
+        <span class="btn-icon" aria-hidden="true">📸</span>
+        <div class="btn-text-wrapper">
+          <span class="btn-title" data-i18n="popup_btn_capture_pdf_visual">PDF Visuel</span>
+          <span class="btn-desc" data-i18n="popup_desc_capture_pdf_visual">Page complète 1:1</span>
+        </div>
       </button>
       <button id="capture-md-btn" class="btn capture-btn" disabled>
-        <span aria-hidden="true">📝</span>
-        <span data-i18n="popup_btn_capture_md">Capturer en Markdown</span>
+        <span class="btn-icon" aria-hidden="true">📝</span>
+        <div class="btn-text-wrapper">
+          <span class="btn-title" data-i18n="popup_btn_capture_md">Markdown</span>
+          <span class="btn-desc" data-i18n="popup_desc_capture_md">Texte brut & tableaux</span>
+        </div>
       </button>
     </div>
     <div id="capture-progress-container" class="progress-container hidden">

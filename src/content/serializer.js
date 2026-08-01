@@ -141,14 +141,27 @@ window.MC4GDSerializer = {
     const container = this._buildContainer(contentHtml, title, byline, siteName);
 
     // ---------------------------------------------------------------
-    // ÉTAPE 3 : Tainted Canvas Protection
-    // (Skill readability-content-extractor §4)
-    // AVANT de passer au convertisseur PDF, on DOIT convertir les
-    // images distantes en Base64 pour éviter les problèmes de CORS
-    // lors de jsPDF addImage().
+    // ÉTAPE 3 : Conversion des images en Data URIs (Tainted Canvas)
+    // (Skill jspdf-integration §2.3)
     // ---------------------------------------------------------------
     await this._protectTaintedCanvas(container);
 
+    return container;
+  },
+
+  /**
+   * Point d'entrée pour la capture visuelle complète (1:1).
+   * Saute l'extraction Readability et utilise le DOM complet nettoyé
+   * afin de conserver les encadrés d'analyse, les headers juridiques et les structures.
+   *
+   * @param  {HTMLElement} wrapperClone - Clone du body de la page.
+   * @returns {Promise<HTMLElement>}     - Container HTML autonome complet.
+   */
+  async getVisualContainer(wrapperClone) {
+    this._cleanDomFallback(wrapperClone);
+    const contentHtml = new XMLSerializer().serializeToString(wrapperClone);
+    const container = this._buildContainer(contentHtml, null, null, null);
+    await this._protectTaintedCanvas(container);
     return container;
   },
 

@@ -577,21 +577,24 @@ a:focus-visible {
    ---------------------------------------------------------- */
 
 .capture-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
 .capture-btn {
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
   background-color: var(--bg-element);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  font-size: 12px;
   border-radius: var(--radius-sm);
+  text-align: left;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
 }
 
 .capture-btn:not(:disabled):hover {
@@ -604,9 +607,27 @@ a:focus-visible {
   cursor: not-allowed;
 }
 
-.capture-btn span[aria-hidden] {
-  font-size: 22px;
+.btn-icon {
+  font-size: 20px;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+.btn-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.btn-desc {
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 /* Mode capture active : réutilise les patterns existants (barre de progression, lien) */

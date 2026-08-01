@@ -169,13 +169,29 @@
     "message": "Capturing page…",
     "description": "Status during page capture"
   },
-  "popup_btn_capture_pdf": {
-    "message": "Capture as PDF",
-    "description": "Button label for PDF capture"
+  "popup_btn_capture_pdf_article": {
+    "message": "PDF Article",
+    "description": "Button label for Clean Article PDF capture"
+  },
+  "popup_desc_capture_pdf_article": {
+    "message": "Clean main content without ads",
+    "description": "Description for Clean Article PDF capture"
+  },
+  "popup_btn_capture_pdf_visual": {
+    "message": "Visual PDF",
+    "description": "Button label for Visual 1:1 PDF capture"
+  },
+  "popup_desc_capture_pdf_visual": {
+    "message": "Full page with exact layout",
+    "description": "Description for Visual 1:1 PDF capture"
   },
   "popup_btn_capture_md": {
-    "message": "Capture as Markdown",
+    "message": "Markdown",
     "description": "Button label for Markdown capture"
+  },
+  "popup_desc_capture_md": {
+    "message": "Raw text & tables for notes/AI",
+    "description": "Description for Markdown capture"
   },
   "err_restricted_page": {
     "message": "This page is restricted. You can allow access in the extension settings (about:addons).",

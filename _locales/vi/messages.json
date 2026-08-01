@@ -169,13 +169,29 @@
     "message": "Đang chụp trang…",
     "description": "Status during page capture"
   },
-  "popup_btn_capture_pdf": {
-    "message": "Chụp dạng PDF",
-    "description": "Button label for PDF capture"
+  "popup_btn_capture_pdf_article": {
+    "message": "PDF Bài viết",
+    "description": "Button label for Clean Article PDF capture"
+  },
+  "popup_desc_capture_pdf_article": {
+    "message": "Nội dung chính gọn gàng không quảng cáo",
+    "description": "Description for Clean Article PDF capture"
+  },
+  "popup_btn_capture_pdf_visual": {
+    "message": "PDF Trực quan",
+    "description": "Button label for Visual 1:1 PDF capture"
+  },
+  "popup_desc_capture_pdf_visual": {
+    "message": "Toàn bộ trang với bố cục chính xác",
+    "description": "Description for Visual 1:1 PDF capture"
   },
   "popup_btn_capture_md": {
-    "message": "Chụp dạng Markdown",
+    "message": "Markdown",
     "description": "Button label for Markdown capture"
+  },
+  "popup_desc_capture_md": {
+    "message": "Văn bản thô & bảng cho ghi chú/AI",
+    "description": "Description for Markdown capture"
   },
   "err_restricted_page": {
     "message": "Trang này bị hạn chế. Bạn có thể cho phép truy cập trong cài đặt tiện ích (about:addons).",

@@ -46,7 +46,8 @@ const progressBar       = document.getElementById('progress-bar');
 // --- Éléments de la section capture (Sprint 16) ---
 const directUploadSection     = document.getElementById('direct-upload-section');
 const captureSection          = document.getElementById('capture-section');
-const capturePdfBtn           = document.getElementById('capture-pdf-btn');
+const capturePdfArticleBtn    = document.getElementById('capture-pdf-article-btn');
+const capturePdfVisualBtn     = document.getElementById('capture-pdf-visual-btn');
 const captureMdBtn            = document.getElementById('capture-md-btn');
 const captureProgressContainer = document.getElementById('capture-progress-container');
 const captureProgressBar      = document.getElementById('capture-progress-bar');
@@ -337,8 +338,9 @@ async function initTabStatus() {
       fileInfo.classList.remove('warning');
       fileIcon.textContent = '🌐';
       fileName.textContent = t('popup_web_page') || 'Page web détectée';
-      capturePdfBtn.disabled = !hasToken;
-      captureMdBtn.disabled = !hasToken;
+      capturePdfArticleBtn.disabled = !hasToken;
+      capturePdfVisualBtn.disabled  = !hasToken;
+      captureMdBtn.disabled         = !hasToken;
       if (hasToken) {
         setStatusLive(t('popup_capture_ready') || 'Capture de page disponible');
       } else {
@@ -495,8 +497,9 @@ async function startCapture(format) {
 
   isCapturing = true;
   isProcessingResult = false;
-  capturePdfBtn.disabled = true;
-  captureMdBtn.disabled = true;
+  capturePdfArticleBtn.disabled = true;
+  capturePdfVisualBtn.disabled  = true;
+  captureMdBtn.disabled         = true;
   captureLinkRow.classList.add('hidden');
   captureProgressContainer.classList.remove('hidden');
   captureProgressBar.style.width = '0%';
@@ -515,8 +518,9 @@ async function startCapture(format) {
       captureProgressContainer.classList.add('hidden');
       setAuthBadge('error', t('popup_auth_error'));
       setStatusLive(response.error);
-      capturePdfBtn.disabled = false;
-      captureMdBtn.disabled = false;
+      capturePdfArticleBtn.disabled = false;
+      capturePdfVisualBtn.disabled  = false;
+      captureMdBtn.disabled         = false;
     }
     // Sinon, le résultat arrivera via uploadComplete (asynchrone)
   } catch (e) {
@@ -524,12 +528,14 @@ async function startCapture(format) {
     captureProgressContainer.classList.add('hidden');
     setAuthBadge('error', t('popup_auth_error'));
     setStatusLive(t('err_upload_failed'));
-    capturePdfBtn.disabled = false;
-    captureMdBtn.disabled = false;
+    capturePdfArticleBtn.disabled = false;
+    capturePdfVisualBtn.disabled  = false;
+    captureMdBtn.disabled         = false;
   }
 }
 
-capturePdfBtn.addEventListener('click', () => startCapture('pdf'));
+capturePdfArticleBtn.addEventListener('click', () => startCapture('pdf_article'));
+capturePdfVisualBtn.addEventListener('click', () => startCapture('pdf_visual'));
 captureMdBtn.addEventListener('click', () => startCapture('md'));
 
 // ----------------------------------------------------------
@@ -614,8 +620,9 @@ browser.runtime.onMessage.addListener((message) => {
       if (message.success) {
         setAuthBadge('success', t('popup_auth_connected'));
         setStatusLive(t('popup_success', { FILE_NAME: message.fileName }));
-        capturePdfBtn.disabled = true;
-        captureMdBtn.disabled = true;
+        capturePdfArticleBtn.disabled = true;
+        capturePdfVisualBtn.disabled  = true;
+        captureMdBtn.disabled         = true;
         updateDisconnectVisibility(true);
 
         if (message.link && message.link.startsWith('https://drive.google.com/')) {
@@ -626,14 +633,16 @@ browser.runtime.onMessage.addListener((message) => {
 
         // Permettre une nouvelle capture après 5 secondes
         setTimeout(() => {
-          capturePdfBtn.disabled = false;
-          captureMdBtn.disabled = false;
+          capturePdfArticleBtn.disabled = false;
+          capturePdfVisualBtn.disabled  = false;
+          captureMdBtn.disabled         = false;
         }, 5000);
       } else {
         setAuthBadge('error', t('popup_auth_error'));
         setStatusLive(message.error || t('err_upload_failed'));
-        capturePdfBtn.disabled = false;
-        captureMdBtn.disabled = false;
+        capturePdfArticleBtn.disabled = false;
+        capturePdfVisualBtn.disabled  = false;
+        captureMdBtn.disabled         = false;
         browser.storage.local.get('accessToken').then(({ accessToken }) => {
           updateDisconnectVisibility(!!accessToken);
         });

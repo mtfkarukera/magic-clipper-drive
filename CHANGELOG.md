@@ -5,6 +5,16 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.16.0] — 2026-08-01
+
+### Ajouté
+- 🔀 **Dual Mode Export PDF** : Introduction de deux modes d'exportation PDF complémentaires dans la popup pour répondre à tous les besoins sans compromis d'extraction.
+- 📄 **PDF Article** : Mode épuré optimisé pour la lecture et l'IA (Readability.js + jsPDF), éliminant les pubs, sidebars et widgets.
+- 📸 **PDF Visuel** : Mode capture 1:1 préservant la mise en page originale, les encadrés d'analyse, les headers juridiques (Légifrance) et l'esthétique du site.
+- 🎨 Interface popup repensée : Nouvelle disposition en liste avec icônes, titres et sous-titres didactiques pour guider le choix de l'utilisateur.
+- 🌍 Nouvelles clés d'internationalisation pour les 2 choix PDF et leurs descriptions dans les 6 locales (`en`, `fr`, `de`, `es`, `vi`, `gcf`).
+- 🛠️ Méthode `getVisualContainer()` ajoutée au serializer pour contourner le filtrage sémantique sans perdre le nettoyage de sécurité.
+
 ## [1.15.0] — 2026-07-31
 
 ### Ajouté
