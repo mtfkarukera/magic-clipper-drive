@@ -52,6 +52,7 @@ const captureProgressContainer = document.getElementById('capture-progress-conta
 const captureProgressBar      = document.getElementById('capture-progress-bar');
 const captureLinkRow          = document.getElementById('capture-link-row');
 const captureLink             = document.getElementById('capture-link');
+const localFileBanner         = document.getElementById('local-file-banner');
 
 // #file-icon contient des emoji décoratifs — masquer aux lecteurs d'écran (A-05)
 fileIcon.setAttribute('aria-hidden', 'true');

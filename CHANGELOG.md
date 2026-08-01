@@ -5,6 +5,14 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.21.1] — 2026-08-02
+
+### Corrigé
+- 🐛 **Correction du gel de la popup UI (ReferenceError)** :
+  - Ajout de la déclaration manquante de `localFileBanner` dans `popup.js`, résolvant un crash JavaScript silencieux qui laissait l'interface bloquée sur "Analyse de l'onglet...".
+  - Sécurisation résiliente de `isAllowedFileSchemeAccess()` avec un timeout de 1 seconde dans le background script.
+  - Ajout d'un timeout de secours de 3 secondes sur `getTabStatus` dans la popup.
+
 ## [1.21.0] — 2026-08-02
 
 ### Ajouté
