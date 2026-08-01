@@ -6,7 +6,7 @@ window.__mc4gd_pdfgen = true;
  * Duplication volontaire pour environnement Firefox MV3 sans bundler.
  *
  * @param {HTMLElement} tableNode - Nœud DOM de la table.
- * @returns {Object} Un objet { head: string[][], body: string[][] } contenant les lignes aplaties.
+ * @returns {Object} Un objet { head: Object[][], body: Object[][] } contenant les lignes aplaties.
  */
 function flattenTable(tableNode) {
   if (!tableNode) return { head: [], body: [] };
@@ -21,8 +21,11 @@ function flattenTable(tableNode) {
     const rowEl = rows[r];
     grid[r] = grid[r] || [];
     
-    const isHead = (rowEl.parentElement && rowEl.parentElement.tagName.toLowerCase() === 'thead')
-                 || (rowEl.querySelector('th') !== null && rowEl.querySelector('td') === null);
+    // FIX : isHead est strictement réservé aux lignes contenues dans un <thead> HTML natif,
+    // ou uniquement à la 1ère ligne (r === 0) si elle ne contient que des <th>.
+    const isInThead = (rowEl.parentElement && rowEl.parentElement.tagName.toLowerCase() === 'thead');
+    const isFirstRowOnlyTh = (r === 0 && rowEl.querySelector('th') !== null && rowEl.querySelector('td') === null);
+    const isHead = isInThead || isFirstRowOnlyTh;
     isHeaderRow[r] = isHead;
 
     const cells = Array.from(rowEl.querySelectorAll('th, td'));
@@ -42,18 +45,22 @@ function flattenTable(tableNode) {
                           .replace(/\n/g, ' ')
                           .replace(/\|/g, '\\|');
 
-      grid[r][col] = content;
+      // Cellule Origine de la zone de fusion M x N
+      grid[r][col] = {
+        text: content,
+        spanW: colspan,
+        spanH: rowspan,
+        isOrigin: true
+      };
 
-      for (let i = 1; i < colspan; i++) {
-        grid[r][col + i] = "";
-      }
-
-      const limitRow = Math.min(r + rowspan, rows.length);
-      for (let nextR = r + 1; nextR < limitRow; nextR++) {
-        grid[nextR] = grid[nextR] || [];
-        grid[nextR][col] = "↓";
-        for (let i = 1; i < colspan; i++) {
-          grid[nextR][col + i] = "";
+      // Marquer TOUTES les autres cellules couvertes par cette zone (horizontales et verticales)
+      for (let hr = 0; hr < rowspan; hr++) {
+        for (let wc = 0; wc < colspan; wc++) {
+          if (hr === 0 && wc === 0) continue; // ignorer la cellule origine
+          const targetR = r + hr;
+          const targetC = col + wc;
+          grid[targetR] = grid[targetR] || [];
+          grid[targetR][targetC] = { isCovered: true, originR: r, originC: col };
         }
       }
 
@@ -68,10 +75,35 @@ function flattenTable(tableNode) {
     }
   }
 
+  // AUTO-COLSPAN : Réservé STRICTEMENT aux lignes de note 
+  // (1 seule cellule origine, et AUCUNE cellule couverte par un rowspan venant du dessus)
+  for (let r = 0; r < grid.length; r++) {
+    let hasCovered = false;
+    let originCellC = -1;
+
+    for (let c = 0; c < maxCols; c++) {
+      if (grid[r][c] && grid[r][c].isCovered) hasCovered = true;
+      if (grid[r][c] && grid[r][c].isOrigin) originCellC = c;
+    }
+
+    if (!hasCovered && originCellC === 0) {
+      const originCells = (grid[r] || []).filter(cell => cell && cell.isOrigin);
+      if (originCells.length === 1 && maxCols > 1) {
+        const firstCell = originCells[0];
+        if (firstCell && firstCell.spanW === 1) {
+          firstCell.spanW = maxCols;
+          for (let c = 1; c < maxCols; c++) {
+            grid[r][c] = { isCovered: true, originR: r, originC: 0 };
+          }
+        }
+      }
+    }
+  }
+
   for (let r = 0; r < grid.length; r++) {
     for (let c = 0; c < maxCols; c++) {
       if (grid[r][c] === undefined) {
-        grid[r][c] = "";
+        grid[r][c] = { text: '', spanW: 1, spanH: 1, isOrigin: true };
       }
     }
   }
@@ -107,14 +139,12 @@ window.MC4GDPdfGenerator = {
    */
   _sanitizeText(str) {
     if (!str) return '';
-    // 1. Liste blanche : ne conserver que les caractères imprimables courants
-    //    ASCII imprimable (0x20-0x7E), lettres accentuées latines (À-ÿ étendu),
-    //    ponctuation courante, symboles monétaires, retours à la ligne
     let cleaned = str.replace(/[^\x20-\x7E\u00C0-\u024F\u1E00-\u1EFF.,;:!?'"«»""''()\-–—/\\@#€$£¥%&*+=<>{}[\]°…\n²³¹]/g, ' ');
-    // 2. Normaliser les retours à la ligne et espaces multiples
     cleaned = cleaned.replace(/[\r\n\t]+/g, ' ').replace(/ {2,}/g, ' ');
-    // 3. Sécurité : forcer une rupture tous les 45 caractères ininterrompus
-    cleaned = cleaned.replace(/(\S{45})/g, '$1 ');
+    // Insérer un espace de césure après la ponctuation ou parenthèses collées
+    cleaned = cleaned.replace(/([\/\-\(\)\[\]])/g, '$1 ');
+    // Sécurité anti-débordement horizontal : forcer une rupture tous les 20 caractères ininterrompus
+    cleaned = cleaned.replace(/(\S{20})/g, '$1 ');
     return cleaned.trim();
   },
 
@@ -173,7 +203,14 @@ window.MC4GDPdfGenerator = {
     let y = m; // curseur vertical
 
     // --- Helpers ---
-    const newPage = () => { doc.addPage(); y = m; };
+    const newPage = (orientation) => {
+      if (orientation) {
+        doc.addPage('a4', orientation);
+      } else {
+        doc.addPage('a4', 'portrait');
+      }
+      y = m;
+    };
     const space = (needed) => { if (y + needed > ph - m) newPage(); };
     const sanitizeText = (str) => this._sanitizeText(str);
 
@@ -282,97 +319,257 @@ window.MC4GDPdfGenerator = {
   },
 
   // =================================================================
-  // _renderTable : Table visuelle avec bordures ET texte structuré
+  // _renderTable : Table visuelle unifiée (isOrigin / isCovered & anti-débordement)
   // =================================================================
   _renderTable(doc, block, m, uw, ph, getY, setY, space, newPage) {
     const allRows = [...(block.head || []), ...(block.body || [])];
     if (allRows.length === 0) return;
-    const maxCols = Math.max(...allRows.map(r => r.length));
+
+    let maxCols = 0;
+    for (const row of allRows) {
+      if (row.length > maxCols) maxCols = row.length;
+    }
     if (maxCols === 0) return;
 
-    const fontSize = 8;
-    const cellPadX = 2;
+    // 1. Basculement automatique en mode Paysage si tableau géant (>= 8 colonnes)
+    let isLandscape = false;
+    let effectiveUw = uw;
+    let effectivePh = ph;
+
+    if (maxCols >= 8) {
+      isLandscape = true;
+      newPage('landscape');
+      effectiveUw = 297 - m * 2; // 267mm utiles en A4 Paysage
+      effectivePh = 210;
+    }
+
+    const fontSize = isLandscape ? 7 : 8;
+    const cellPadX = isLandscape ? 1.5 : 2;
     const cellPadY = 1.5;
     const lh = fontSize * 0.4;
 
     doc.setFontSize(fontSize);
     doc.setFont('helvetica', 'normal');
 
-    // Calculer largeurs de colonnes
-    const colW = [];
+    const getCellMeta = (cell) => {
+      if (cell && typeof cell === 'object') {
+        return {
+          text: cell.text || '',
+          spanW: cell.spanW || 1,
+          spanH: cell.spanH || 1,
+          isOrigin: !!cell.isOrigin,
+          isCovered: !!cell.isCovered
+        };
+      }
+      return { text: (cell || '').toString(), spanW: 1, spanH: 1, isOrigin: true, isCovered: false };
+    };
+
+    // 2. Calcul de la Largeur Naturelle (W_nat) par colonne
+    const colWNat = new Array(maxCols).fill(0);
+    const absoluteMinColW = 5;
+
     for (let c = 0; c < maxCols; c++) {
-      let maxW = 10;
+      let maxW = absoluteMinColW;
       for (const row of allRows) {
-        const tw = doc.getTextWidth((row[c] || '').toString()) + cellPadX * 2;
+        const meta = getCellMeta(row[c]);
+        if (meta.spanW > 1 || meta.isCovered) continue;
+
+        const txt = this._sanitizeText(meta.text);
+        const tw = doc.getTextWidth(txt) + cellPadX * 2;
         if (tw > maxW) maxW = tw;
       }
-      colW.push(maxW);
+      colWNat[c] = maxW;
     }
 
-    // Ajuster à la largeur utilisable
-    const totalW = colW.reduce((a, b) => a + b, 0);
-    const scale = Math.min(uw / totalW, 1);
-    for (let c = 0; c < maxCols; c++) colW[c] *= scale;
+    // 2.bis. Ajustement de largeur pour les colspans
+    for (let r = 0; r < allRows.length; r++) {
+      const row = allRows[r];
+      for (let c = 0; c < maxCols; c++) {
+        const meta = getCellMeta(row[c]);
+        if (meta.isOrigin && meta.spanW > 1) {
+          const txt = this._sanitizeText(meta.text);
+          const tw = doc.getTextWidth(txt) + cellPadX * 2;
+          
+          let currentSpanW = 0;
+          for (let i = 0; i < meta.spanW && (c + i) < maxCols; i++) {
+            currentSpanW += colWNat[c + i];
+          }
+          
+          if (tw > currentSpanW) {
+            const extra = tw - currentSpanW;
+            const extraPerCol = extra / Math.min(meta.spanW, maxCols - c);
+            for (let i = 0; i < meta.spanW && (c + i) < maxCols; i++) {
+              colWNat[c + i] += extraPerCol;
+            }
+          }
+        }
+      }
+    }
+
+    const totalNatW = colWNat.reduce((a, b) => a + b, 0);
+    const densityRatio = totalNatW / effectiveUw;
+
+    // Décision d'Alignement & Largeur (Indicateur de Densité à 50%)
+    const colW = [...colWNat];
+    let startX = m;
+    let tableW = effectiveUw;
+
+    if (densityRatio >= 0.50 || totalNatW >= effectiveUw) {
+      // MODE PLEINE LARGEUR (100% de effectiveUw, aligné à m)
+      tableW = effectiveUw;
+      startX = m;
+      if (totalNatW > effectiveUw) {
+        const scale = effectiveUw / totalNatW;
+        for (let c = 0; c < maxCols; c++) {
+          colW[c] *= scale; // Strictement proportionnel, aucun Math.max
+        }
+      } else if (totalNatW < effectiveUw && totalNatW > 0) {
+        const extraPerCol = (effectiveUw - totalNatW) / maxCols;
+        for (let c = 0; c < maxCols; c++) {
+          colW[c] += extraPerCol;
+        }
+      }
+    } else {
+      // MODE CENTRÉ - ADAPTATIF (Compact aéré, centré horizontalement)
+      tableW = Math.min(effectiveUw, Math.max(absoluteMinColW * maxCols, totalNatW * 1.15));
+      startX = m + (effectiveUw - tableW) / 2;
+      const scale = tableW / totalNatW;
+      for (let c = 0; c < maxCols; c++) {
+        colW[c] *= scale;
+      }
+    }
 
     const headCount = (block.head || []).length;
 
+    // 3. PASSE 1 : Calcul de la hauteur propre de chaque ligne (rowHeights[r])
+    const rowHeights = [];
+    const cellLinesMatrix = [];
+
     for (let r = 0; r < allRows.length; r++) {
       const row = allRows[r];
-      const isHead = r < headCount;
+      const lineMap = [];
+      let maxLinesInRow = 1;
 
-      // Calculer hauteur (multi-ligne)
-      const cellLines = [];
-      let maxLines = 1;
       for (let c = 0; c < maxCols; c++) {
-        const txt = this._sanitizeText((row[c] || '').toString());
-        const avail = colW[c] - cellPadX * 2;
-        const lines = doc.splitTextToSize(txt, Math.max(avail, 5));
-        cellLines.push(lines);
-        if (lines.length > maxLines) maxLines = lines.length;
-      }
-      const rowH = maxLines * lh + cellPadY * 2;
+        const meta = getCellMeta(row[c]);
+        if (meta.isCovered || !meta.isOrigin) {
+          lineMap.push([]);
+          continue;
+        }
 
-      // Saut de page si nécessaire
-      let curY = getY();
-      if (curY + rowH > ph - m) {
-        newPage();
+        let availW = 0;
+        for (let i = 0; i < meta.spanW && (c + i) < maxCols; i++) {
+          availW += colW[c + i];
+        }
+        availW -= cellPadX * 2;
+
+        const txt = this._sanitizeText(meta.text);
+        const lines = doc.splitTextToSize(txt, Math.max(availW, 5));
+        lineMap.push(lines);
+
+        if (meta.spanH === 1 && lines.length > maxLinesInRow) {
+          maxLinesInRow = lines.length;
+        }
+      }
+
+      cellLinesMatrix.push(lineMap);
+      rowHeights[r] = maxLinesInRow * lh + cellPadY * 2;
+    }
+
+    // 3.5. PASSE 1.5 : Ajustement des hauteurs pour les rowspan (spanH > 1)
+    for (let r = 0; r < allRows.length; r++) {
+      for (let c = 0; c < maxCols; c++) {
+        const meta = getCellMeta(allRows[r][c]);
+        if (meta.isOrigin && meta.spanH > 1) {
+          const lines = cellLinesMatrix[r][c] || [];
+          const requiredH = lines.length * lh + cellPadY * 2;
+          
+          let currentH = 0;
+          for (let k = 0; k < meta.spanH && (r + k) < allRows.length; k++) {
+            currentH += rowHeights[r + k];
+          }
+          
+          if (requiredH > currentH) {
+            const extra = requiredH - currentH;
+            const extraPerRow = extra / Math.min(meta.spanH, allRows.length - r);
+            for (let k = 0; k < meta.spanH && (r + k) < allRows.length; k++) {
+              rowHeights[r + k] += extraPerRow;
+            }
+          }
+        }
+      }
+    }
+
+    // 4. PASSE 2 : Dessin et gestion des fusions (rowspan & colspan)
+    let curY = getY();
+
+    for (let r = 0; r < allRows.length; r++) {
+      const isHead = r < headCount;
+      const rowH = rowHeights[r];
+
+      if (curY + rowH > effectivePh - m) {
+        newPage(isLandscape ? 'landscape' : 'portrait');
         curY = m;
       }
 
-      // Dessiner chaque cellule
-      let cellX = m;
-      for (let c = 0; c < maxCols; c++) {
-        const cw = colW[c];
+      let cellX = startX;
 
-        // Fond
-        if (isHead) {
-          doc.setFillColor(230, 240, 255);
-          doc.rect(cellX, curY, cw, rowH, 'F');
-        } else if (r % 2 === 0) {
-          doc.setFillColor(248, 248, 248);
-          doc.rect(cellX, curY, cw, rowH, 'F');
+      for (let c = 0; c < maxCols; c++) {
+        const meta = getCellMeta(allRows[r][c]);
+
+        if (meta.isCovered) {
+          cellX += colW[c];
+          continue;
         }
 
-        // Bordure
+        let cellW = 0;
+        for (let i = 0; i < meta.spanW && (c + i) < maxCols; i++) {
+          cellW += colW[c + i];
+        }
+
+        if (c + meta.spanW >= maxCols) {
+          cellW = (startX + tableW) - cellX;
+        }
+
+        let cellH = 0;
+        for (let k = 0; k < meta.spanH && (r + k) < allRows.length; k++) {
+          cellH += rowHeights[r + k];
+        }
+
+        if (isHead) {
+          doc.setFillColor(230, 240, 255);
+          doc.rect(cellX, curY, cellW, cellH, 'F');
+        } else if (r % 2 === 0) {
+          doc.setFillColor(248, 248, 248);
+          doc.rect(cellX, curY, cellW, cellH, 'F');
+        }
+
         doc.setDrawColor(180, 180, 180);
         doc.setLineWidth(0.2);
-        doc.rect(cellX, curY, cw, rowH, 'S');
+        doc.rect(cellX, curY, cellW, cellH, 'S');
 
-        // Texte
         doc.setFontSize(fontSize);
         doc.setFont('helvetica', isHead ? 'bold' : 'normal');
         doc.setTextColor(isHead ? 30 : 50, isHead ? 30 : 50, isHead ? 30 : 50);
-        const lines = cellLines[c];
-        let textY = curY + cellPadY + lh * 0.8;
+
+        const lines = cellLinesMatrix[r][c] || [];
+        const totalTextH = lines.length * lh;
+        const verticalOffset = Math.max(0, (cellH - totalTextH) / 2);
+        let textY = curY + verticalOffset + lh * 0.75;
+
         for (const line of lines) {
           doc.text(line, cellX + cellPadX, textY);
           textY += lh;
         }
-        cellX += cw;
+
+        cellX += cellW;
+        c += (meta.spanW - 1);
       }
-      setY(curY + rowH);
+
+      curY += rowH;
     }
-    setY(getY() + 4);
+
+    setY(curY + 4);
   },
 
   // =================================================================

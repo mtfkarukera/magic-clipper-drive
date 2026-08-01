@@ -5,6 +5,14 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.20.0] — 2026-08-01
+
+### Modifié / Amélioré
+- 📊 **Refonte et Stabilisation Géométrique des Tableaux PDF** :
+  - **Gestion de la Largeur Proportionnelle** : Suppression des contraintes rigides de largeur minimale qui provoquaient des débordements sur la marge droite des tableaux denses. Les colonnes s'ajustent désormais avec un ratio strictement proportionnel sur 100% de la largeur utilisable.
+  - **Prise en compte des Hauteurs de Rowspan (Passe 1.5)** : Les cellules fusionnées verticalement calculent leur hauteur textuelle requise et la redistribuent sur l'ensemble des lignes englobées, éliminant les coupures et les chevauchements.
+  - **Sécurisation d'Auto-Colspan (`flattenTable`)** : Conditionnement de l'étalement automatique des lignes à une seule cellule (`!hasCovered`) afin de ne plus écraser les fusions verticales existantes et d'empêcher tout glissement ou surimpression de texte.
+
 ## [1.17.0] — 2026-08-01
 
 ### Modifié
