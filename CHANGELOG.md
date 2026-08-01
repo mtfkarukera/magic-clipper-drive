@@ -5,6 +5,17 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.21.0] — 2026-08-02
+
+### Ajouté
+- 📁 **Prise en charge des fichiers locaux (`file:///*`)** :
+  - Intégration de l'autorisation d'accès aux fichiers locaux dans `manifest.json` (`host_permissions`).
+  - Détection dynamique de la permission à chaud via l'API Firefox native `browser.extension.isAllowedFileSchemeAccess()`.
+  - **Bandeau Pédagogique UI** : Affichage d'un composant d'avertissement et d'instructions pas-à-pas dans la popup en cas de permission manquante dans `about:addons`.
+  - **Lien vers la documentation officielle Mozilla** : Intégration d'un lien direct vers `support.mozilla.org/kb/manage-optional-permissions-extensions` (`target="_blank" rel="noopener noreferrer"`).
+  - **Pipeline d'extraction sécurisé** : Extraction des octets bruts par le Content Script injecté dans l'onglet `file://` (qui tourne dans l'origine du fichier local), puis transmission sécurisée au Background script pour téléversement résumable vers Google Drive.
+  - Nouvelles clés d'internationalisation ajoutées dans les 6 locales (`en`, `fr`, `de`, `es`, `vi`, `gcf`).
+
 ## [1.20.0] — 2026-08-01
 
 ### Modifié / Amélioré

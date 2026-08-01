@@ -293,59 +293,72 @@ async function initTabStatus() {
   try {
     const result = await browser.runtime.sendMessage({ action: 'getTabStatus' });
 
-    if (result.supported) {
-      // --- MODE FICHIER DIRECT (existant, inchangé) ---
-      directUploadSection.classList.remove('hidden');
-      captureSection.classList.add('hidden');
-      fileIcon.textContent = getIconForMime(result.mimeType);
-      fileName.textContent = result.fileName;
-      fileInfo.classList.remove('warning');
-      uploadBtn.disabled = false;
-      if (hasToken) {
-        setStatusLive(t('popup_idle_label'));
-      } else {
-        setStatusLive(t('popup_disconnected_status'));
-      }
-    } else if (result.reason === 'local_file' || result.reason === 'private_network' || result.reason === 'file_too_large') {
-      // --- MODE ERREUR SPÉCIFIQUE (existant, inchangé) ---
-      directUploadSection.classList.remove('hidden');
-      captureSection.classList.add('hidden');
-      fileInfo.classList.add('warning');
-      uploadBtn.disabled = true;
-      if (result.reason === 'local_file') {
-        fileName.textContent = t('popup_local_file');
-        setStatusLive(t('err_local_file'));
-      } else if (result.reason === 'private_network') {
-        fileName.textContent = t('popup_unsupported');
-        setStatusLive(t('err_private_network'));
-      } else {
-        fileName.textContent = t('popup_unsupported');
-        setStatusLive(t('err_file_too_large'));
-      }
-    } else if (result.reason === 'system_page') {
-      // --- MODE PAGE SYSTÈME (about:*, moz-extension:*) ---
+    if (result.reason === 'local_file_permission_needed') {
+      // --- BANDEAU PERMISSION FICHIERS LOCAUX (Sprint 15) ---
       directUploadSection.classList.add('hidden');
       captureSection.classList.add('hidden');
+      if (localFileBanner) localFileBanner.classList.remove('hidden');
       fileInfo.classList.add('warning');
-      fileName.textContent = t('popup_unsupported');
-      setStatusLive(t('popup_unsupported'));
+      fileName.textContent = result.fileName || t('popup_local_file');
+      setStatusLive(t('err_local_file_permission_needed') || t('err_local_file'));
     } else {
-      // --- MODE CAPTURE DE PAGE WEB (NOUVEAU) ---
-      // Aucun fichier détectable → proposer la capture
-      directUploadSection.classList.add('hidden');
-      captureSection.classList.remove('hidden');
-      fileInfo.classList.remove('warning');
-      fileIcon.textContent = '🌐';
-      fileName.textContent = t('popup_web_page') || 'Page web détectée';
-      capturePdfBtn.disabled = !hasToken;
-      captureMdBtn.disabled  = !hasToken;
-      if (hasToken) {
-        setStatusLive(t('popup_capture_ready') || 'Capture de page disponible');
+      if (localFileBanner) localFileBanner.classList.add('hidden');
+
+      if (result.supported) {
+        // --- MODE FICHIER DIRECT (existant, inchangé) ---
+        directUploadSection.classList.remove('hidden');
+        captureSection.classList.add('hidden');
+        fileIcon.textContent = getIconForMime(result.mimeType);
+        fileName.textContent = result.fileName;
+        fileInfo.classList.remove('warning');
+        uploadBtn.disabled = false;
+        if (hasToken) {
+          setStatusLive(t('popup_idle_label'));
+        } else {
+          setStatusLive(t('popup_disconnected_status'));
+        }
+      } else if (result.reason === 'local_file' || result.reason === 'private_network' || result.reason === 'file_too_large') {
+        // --- MODE ERREUR SPÉCIFIQUE (existant, inchangé) ---
+        directUploadSection.classList.remove('hidden');
+        captureSection.classList.add('hidden');
+        fileInfo.classList.add('warning');
+        uploadBtn.disabled = true;
+        if (result.reason === 'local_file') {
+          fileName.textContent = t('popup_local_file');
+          setStatusLive(t('err_local_file'));
+        } else if (result.reason === 'private_network') {
+          fileName.textContent = t('popup_unsupported');
+          setStatusLive(t('err_private_network'));
+        } else {
+          fileName.textContent = t('popup_unsupported');
+          setStatusLive(t('err_file_too_large'));
+        }
+      } else if (result.reason === 'system_page') {
+        // --- MODE PAGE SYSTÈME (about:*, moz-extension:*) ---
+        directUploadSection.classList.add('hidden');
+        captureSection.classList.add('hidden');
+        fileInfo.classList.add('warning');
+        fileName.textContent = t('popup_unsupported');
+        setStatusLive(t('popup_unsupported'));
       } else {
-        setStatusLive(t('popup_disconnected_status'));
+        // --- MODE CAPTURE DE PAGE WEB (NOUVEAU) ---
+        // Aucun fichier détectable → proposer la capture
+        directUploadSection.classList.add('hidden');
+        captureSection.classList.remove('hidden');
+        fileInfo.classList.remove('warning');
+        fileIcon.textContent = '🌐';
+        fileName.textContent = t('popup_web_page') || 'Page web détectée';
+        capturePdfBtn.disabled = !hasToken;
+        captureMdBtn.disabled  = !hasToken;
+        if (hasToken) {
+          setStatusLive(t('popup_capture_ready') || 'Capture de page disponible');
+        } else {
+          setStatusLive(t('popup_disconnected_status'));
+        }
       }
     }
   } catch (e) {
+    if (localFileBanner) localFileBanner.classList.add('hidden');
     fileInfo.classList.add('warning');
     fileName.textContent = t('popup_no_file');
     setStatusLive(t('err_network'));

@@ -656,3 +656,64 @@ a:focus-visible {
     min-height: 44px;
   }
 }
+
+/* ----------------------------------------------------------
+   BANDEAU PERMISSION FICHIERS LOCAUX (Sprint 15)
+   ---------------------------------------------------------- */
+
+.local-file-banner {
+  padding: 8px 12px;
+}
+
+.banner-card {
+  background: var(--bg-element);
+  border: 1px solid var(--status-loading);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: left;
+}
+
+.banner-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.banner-icon {
+  font-size: 16px;
+}
+
+.banner-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.banner-steps {
+  font-size: 11px;
+  color: var(--text-main);
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+  padding-left: 16px;
+}
+
+.banner-steps li {
+  margin-bottom: 4px;
+}
+
+.banner-link {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.banner-link:hover {
+  text-decoration: underline;
+  color: var(--primary-hover);
+}
+

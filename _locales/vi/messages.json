@@ -22,6 +22,12 @@
     }
   },
   "err_local_file": { "message": "Tệp cục bộ không được hỗ trợ. Mở tệp từ một URL trực tuyến.", "description": "Error: local file" },
+  "err_local_file_permission_needed": { "message": "Truy cập các tệp cục bộ yêu cầu sự cho phép của bạn trong cài đặt tiện ích mở rộng.", "description": "Error: local file permission needed" },
+  "popup_local_banner_title": { "message": "Yêu cầu quyền đối với các tệp cục bộ", "description": "Local banner title" },
+  "popup_local_banner_step1": { "message": "1. Mở about:addons trong một thẻ mới", "description": "Local banner step 1" },
+  "popup_local_banner_step2": { "message": "2. Chọn Magic Clipper for Google Drive", "description": "Local banner step 2" },
+  "popup_local_banner_step3": { "message": "3. Trong thẻ Quyền, bật 'Truy cập các tệp cục bộ'", "description": "Local banner step 3" },
+  "popup_local_banner_link": { "message": "Tham khảo hướng dẫn chính thức của Mozilla ↗", "description": "Local banner official guide link" },
   "err_unsupported_type": { "message": "Loại tệp không được hỗ trợ.", "description": "Error: unsupported file type" },
   "err_quota": { "message": "Không đủ không gian lưu trữ Google Drive.", "description": "Error: out of quota" },
   "err_download_failed": {

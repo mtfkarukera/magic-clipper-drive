@@ -50,6 +50,24 @@
   "err_local_file": {
     "message": "Nou pa ka sipòté pyès ki anlè owdinatè a'w menm. Wouvè fichyé-la depi on URL asi entènèt."
   },
+  "err_local_file_permission_needed": {
+    "message": "Akse adan fichye lokal ka mandé otorizasyon aw adan réglaj estansyon la."
+  },
+  "popup_local_banner_title": {
+    "message": "Otorizasyon mandé pou fichye lokal"
+  },
+  "popup_local_banner_step1": {
+    "message": "1. Ouvè about:addons adan yon nouvo onglet"
+  },
+  "popup_local_banner_step2": {
+    "message": "2. Chwazi Magic Clipper for Google Drive"
+  },
+  "popup_local_banner_step3": {
+    "message": "3. Adan Otorizasyon, me't 'Akse adan fichye lokal' an mach"
+  },
+  "popup_local_banner_link": {
+    "message": "Gidé ofisyel Mozilla la ↗"
+  },
   "err_unsupported_type": {
     "message": "Nou pa ka pwan sé kalité pyès-la sa."
   },

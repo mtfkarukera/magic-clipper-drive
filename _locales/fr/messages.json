@@ -22,6 +22,12 @@
     }
   },
   "err_local_file": { "message": "Les fichiers locaux ne sont pas supportés. Ouvrez le fichier depuis une URL en ligne.", "description": "Error: local file" },
+  "err_local_file_permission_needed": { "message": "L'accès aux fichiers locaux nécessite votre autorisation dans les paramètres de l'extension.", "description": "Error: local file permission needed" },
+  "popup_local_banner_title": { "message": "Permission requise pour les fichiers locaux", "description": "Local banner title" },
+  "popup_local_banner_step1": { "message": "1. Ouvre about:addons dans un nouvel onglet", "description": "Local banner step 1" },
+  "popup_local_banner_step2": { "message": "2. Sélectionne Magic Clipper for Google Drive", "description": "Local banner step 2" },
+  "popup_local_banner_step3": { "message": "3. Dans l'onglet Permissions, active « Accéder aux fichiers locaux »", "description": "Local banner step 3" },
+  "popup_local_banner_link": { "message": "Consulter le guide officiel Mozilla ↗", "description": "Local banner official guide link" },
   "err_unsupported_type": { "message": "Type de fichier non supporté.", "description": "Error: unsupported file type" },
   "err_quota": { "message": "Espace de stockage Google Drive insuffisant.", "description": "Error: out of quota" },
   "err_download_failed": {

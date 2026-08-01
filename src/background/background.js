@@ -313,9 +313,37 @@ async function detectFileFromTab(tab) {
   const title = tab.title || "";
   const url = resolveDownloadUrl(rawUrl);
 
-  // Blocage fichiers locaux — définitif
+  // Fichiers locaux (file://) — Vérification dynamique de la permission
   if (url.startsWith("file://")) {
-    return { supported: false, reason: "local_file" };
+    let isAllowed = false;
+    try {
+      if (browser.extension.isAllowedFileSchemeAccess) {
+        isAllowed = await browser.extension.isAllowedFileSchemeAccess();
+      }
+    } catch (e) {
+      isAllowed = false;
+    }
+    if (!isAllowed) {
+      return { supported: false, reason: "local_file_permission_needed", fileName: getFileNameFromUrl(url, title) };
+    }
+
+    // Si la permission est accordée, détection du format par extension dans l'URL
+    try {
+      const pathname = new URL(url).pathname;
+      const lastSegment = pathname.split("/").pop();
+      const dotIndex = lastSegment.lastIndexOf(".");
+      if (dotIndex > 0) {
+        const ext = lastSegment.substring(dotIndex + 1).toLowerCase();
+        if (MIME_MAP[ext]) {
+          const fileName = getFileNameFromUrl(url, title);
+          return { supported: true, isLocalFile: true, fileName, mimeType: MIME_MAP[ext] };
+        }
+      }
+    } catch (e) {
+      // Continuer vers non supporté (page HTML locale)
+    }
+
+    return { supported: false, reason: "unsupported_type", isLocalFile: true };
   }
 
   // Blocage adresses privées / loopback (SSRF)
@@ -837,6 +865,53 @@ async function uploadFileResumable(fileBlob, fileName, mimeType, token, folderId
   return uploadChunked(fileBlob, sessionUrl, mimeType, 0, uploadState);
 }
 
+/**
+ * Extrait un fichier local (file://) via l'exécution d'un script de contenu dans l'onglet actif.
+ * Contourne la restriction de sécurité bloquant les fetch() locaux depuis le background.
+ *
+ * @param {number} tabId — ID de l'onglet actif
+ * @param {Object} uploadState — État de l'upload courant
+ * @returns {Promise<Blob>} Le fichier sous forme de Blob
+ */
+async function downloadLocalFileFromTab(tabId, uploadState) {
+  uploadState.percent = 10;
+  await persistUploadState(uploadState);
+
+  const results = await browser.scripting.executeScript({
+    target: { tabId },
+    func: async () => {
+      const res = await fetch(window.location.href);
+      if (!res.ok) throw new Error("HTTP_ERROR_" + res.status);
+      const buf = await res.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let binary = "";
+      const len = bytes.byteLength;
+      const chunkSize = 0x8000;
+      for (let i = 0; i < len; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      }
+      return { base64: btoa(binary), type: res.headers.get("Content-Type") || "" };
+    }
+  });
+
+  if (!results || !results[0] || !results[0].result) {
+    throw new Error("ERR_LOCAL_READ_FAILED");
+  }
+
+  const { base64, type } = results[0].result;
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  const fileBlob = new Blob([bytes], { type: type || uploadState.mimeType });
+  uploadState.percent = 100;
+  await persistUploadState(uploadState);
+
+  return fileBlob;
+}
+
 // ----------------------------------------------------------
 // UPLOAD AVEC RETRY (401 token expiré, 404 dossier supprimé)
 // ----------------------------------------------------------
@@ -863,8 +938,11 @@ async function uploadWithRetry(url, fileName, mimeType, tabId, uploadState) {
 
   let fileBlob;
   try {
-    // T-03 (F-06) — Passer le expectedMimeType pour validation
-    fileBlob = await downloadFileWithProgress(url, mimeType, tabId, uploadState);
+    if (url.startsWith("file://")) {
+      fileBlob = await downloadLocalFileFromTab(tabId, uploadState);
+    } else {
+      fileBlob = await downloadFileWithProgress(url, mimeType, tabId, uploadState);
+    }
   } catch (err) {
     if (err.name === "AbortError" || err.message === "TIMEOUT") {
       throw new Error("TIMEOUT");
