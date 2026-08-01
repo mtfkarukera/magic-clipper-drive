@@ -291,7 +291,10 @@ async function initTabStatus() {
 
   // 2. Déterminer l'éligibilité du fichier sur l'onglet actif
   try {
-    const result = await browser.runtime.sendMessage({ action: 'getTabStatus' });
+    const result = await Promise.race([
+      browser.runtime.sendMessage({ action: 'getTabStatus' }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT_TAB_STATUS')), 3000))
+    ]);
 
     if (result.reason === 'local_file_permission_needed') {
       // --- BANDEAU PERMISSION FICHIERS LOCAUX (Sprint 15) ---

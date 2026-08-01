@@ -307,6 +307,44 @@ async function parseAndThrowDriveError(res) {
  *
  * @param {Object} tab — objet tab Firefox { url, title }
  * @returns {Promise<Object>} { supported, fileName, mimeType, reason? }
+/**
+ * Vérifie de manière résiliente la permission d'accès aux fichiers locaux.
+ * Intègre un timeout de 1s pour éviter les blocages de promesse sur certaines versions de navigateur.
+ * @returns {Promise<boolean>}
+ */
+async function checkFileSchemeAccess() {
+  try {
+    if (typeof browser !== "undefined" && browser.extension && typeof browser.extension.isAllowedFileSchemeAccess === "function") {
+      const res = browser.extension.isAllowedFileSchemeAccess();
+      if (res && typeof res.then === "function") {
+        return await Promise.race([
+          res,
+          new Promise((resolve) => setTimeout(() => resolve(false), 1000))
+        ]);
+      }
+      if (typeof res === "boolean") return res;
+      return await new Promise((resolve) => {
+        try {
+          browser.extension.isAllowedFileSchemeAccess((isAllowed) => resolve(!!isAllowed));
+        } catch (e) {
+          resolve(false);
+        }
+      });
+    }
+  } catch (e) {
+    console.warn("[MC4GD] Erreur checkFileSchemeAccess:", e);
+  }
+  return false;
+}
+
+/**
+ * Analyse l'onglet actif pour déterminer si le fichier ou la page est supporté.
+ * Étape 1 : extension dans l'URL
+ * Étape 2 : HEAD request fallback si aucune extension reconnue
+ * Ne télécharge jamais le corps du fichier.
+ *
+ * @param {Object} tab — objet tab Firefox { url, title }
+ * @returns {Promise<Object>} { supported, fileName, mimeType, reason? }
  */
 async function detectFileFromTab(tab) {
   const rawUrl = tab.url || "";
@@ -315,14 +353,7 @@ async function detectFileFromTab(tab) {
 
   // Fichiers locaux (file://) — Vérification dynamique de la permission
   if (url.startsWith("file://")) {
-    let isAllowed = false;
-    try {
-      if (browser.extension.isAllowedFileSchemeAccess) {
-        isAllowed = await browser.extension.isAllowedFileSchemeAccess();
-      }
-    } catch (e) {
-      isAllowed = false;
-    }
+    const isAllowed = await checkFileSchemeAccess();
     if (!isAllowed) {
       return { supported: false, reason: "local_file_permission_needed", fileName: getFileNameFromUrl(url, title) };
     }
