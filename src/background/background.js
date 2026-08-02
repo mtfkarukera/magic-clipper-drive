@@ -307,74 +307,15 @@ async function parseAndThrowDriveError(res) {
  *
  * @param {Object} tab — objet tab Firefox { url, title }
  * @returns {Promise<Object>} { supported, fileName, mimeType, reason? }
-/**
- * Vérifie de manière résiliente la permission d'accès aux fichiers locaux.
- * Intègre un timeout de 1s pour éviter les blocages de promesse sur certaines versions de navigateur.
- * @returns {Promise<boolean>}
- */
-async function checkFileSchemeAccess() {
-  try {
-    if (typeof browser !== "undefined" && browser.extension && typeof browser.extension.isAllowedFileSchemeAccess === "function") {
-      const res = browser.extension.isAllowedFileSchemeAccess();
-      if (res && typeof res.then === "function") {
-        return await Promise.race([
-          res,
-          new Promise((resolve) => setTimeout(() => resolve(false), 1000))
-        ]);
-      }
-      if (typeof res === "boolean") return res;
-      return await new Promise((resolve) => {
-        try {
-          browser.extension.isAllowedFileSchemeAccess((isAllowed) => resolve(!!isAllowed));
-        } catch (e) {
-          resolve(false);
-        }
-      });
-    }
-  } catch (e) {
-    console.warn("[MC4GD] Erreur checkFileSchemeAccess:", e);
-  }
-  return false;
-}
-
-/**
- * Analyse l'onglet actif pour déterminer si le fichier ou la page est supporté.
- * Étape 1 : extension dans l'URL
- * Étape 2 : HEAD request fallback si aucune extension reconnue
- * Ne télécharge jamais le corps du fichier.
- *
- * @param {Object} tab — objet tab Firefox { url, title }
- * @returns {Promise<Object>} { supported, fileName, mimeType, reason? }
  */
 async function detectFileFromTab(tab) {
   const rawUrl = tab.url || "";
   const title = tab.title || "";
   const url = resolveDownloadUrl(rawUrl);
 
-  // Fichiers locaux (file://) — Vérification dynamique de la permission
+  // Blocage fichiers locaux — définitif
   if (url.startsWith("file://")) {
-    const isAllowed = await checkFileSchemeAccess();
-    if (!isAllowed) {
-      return { supported: false, reason: "local_file_permission_needed", fileName: getFileNameFromUrl(url, title) };
-    }
-
-    // Si la permission est accordée, détection du format par extension dans l'URL
-    try {
-      const pathname = new URL(url).pathname;
-      const lastSegment = pathname.split("/").pop();
-      const dotIndex = lastSegment.lastIndexOf(".");
-      if (dotIndex > 0) {
-        const ext = lastSegment.substring(dotIndex + 1).toLowerCase();
-        if (MIME_MAP[ext]) {
-          const fileName = getFileNameFromUrl(url, title);
-          return { supported: true, isLocalFile: true, fileName, mimeType: MIME_MAP[ext] };
-        }
-      }
-    } catch (e) {
-      // Continuer vers non supporté (page HTML locale)
-    }
-
-    return { supported: false, reason: "unsupported_type", isLocalFile: true };
+    return { supported: false, reason: "local_file" };
   }
 
   // Blocage adresses privées / loopback (SSRF)
@@ -896,53 +837,6 @@ async function uploadFileResumable(fileBlob, fileName, mimeType, token, folderId
   return uploadChunked(fileBlob, sessionUrl, mimeType, 0, uploadState);
 }
 
-/**
- * Extrait un fichier local (file://) via l'exécution d'un script de contenu dans l'onglet actif.
- * Contourne la restriction de sécurité bloquant les fetch() locaux depuis le background.
- *
- * @param {number} tabId — ID de l'onglet actif
- * @param {Object} uploadState — État de l'upload courant
- * @returns {Promise<Blob>} Le fichier sous forme de Blob
- */
-async function downloadLocalFileFromTab(tabId, uploadState) {
-  uploadState.percent = 10;
-  await persistUploadState(uploadState);
-
-  const results = await browser.scripting.executeScript({
-    target: { tabId },
-    func: async () => {
-      const res = await fetch(window.location.href);
-      if (!res.ok) throw new Error("HTTP_ERROR_" + res.status);
-      const buf = await res.arrayBuffer();
-      const bytes = new Uint8Array(buf);
-      let binary = "";
-      const len = bytes.byteLength;
-      const chunkSize = 0x8000;
-      for (let i = 0; i < len; i += chunkSize) {
-        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
-      }
-      return { base64: btoa(binary), type: res.headers.get("Content-Type") || "" };
-    }
-  });
-
-  if (!results || !results[0] || !results[0].result) {
-    throw new Error("ERR_LOCAL_READ_FAILED");
-  }
-
-  const { base64, type } = results[0].result;
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-
-  const fileBlob = new Blob([bytes], { type: type || uploadState.mimeType });
-  uploadState.percent = 100;
-  await persistUploadState(uploadState);
-
-  return fileBlob;
-}
-
 // ----------------------------------------------------------
 // UPLOAD AVEC RETRY (401 token expiré, 404 dossier supprimé)
 // ----------------------------------------------------------
@@ -969,11 +863,8 @@ async function uploadWithRetry(url, fileName, mimeType, tabId, uploadState) {
 
   let fileBlob;
   try {
-    if (url.startsWith("file://")) {
-      throw new Error("ERR_LOCAL_FILE_IMPORT_REQUIRED");
-    } else {
-      fileBlob = await downloadFileWithProgress(url, mimeType, tabId, uploadState);
-    }
+    // T-03 (F-06) — Passer le expectedMimeType pour validation
+    fileBlob = await downloadFileWithProgress(url, mimeType, tabId, uploadState);
   } catch (err) {
     if (err.name === "AbortError" || err.message === "TIMEOUT") {
       throw new Error("TIMEOUT");
@@ -1039,7 +930,6 @@ async function disconnect() {
 
 const ERROR_I18N_MAP = {
   FILE_TOO_LARGE: "err_file_too_large",
-  ERR_LOCAL_FILE_IMPORT_REQUIRED: "err_local_file",
 
   TIMEOUT: "err_timeout",
   RATE_LIMIT_EXCEEDED: "err_rate_limit",
@@ -1343,83 +1233,6 @@ async function handleMessage(message) {
         return { success: false, error: "No active tab" };
       }
       return await handleUploadCurrentFile(tab);
-    }
-
-    case "uploadImportedFile": {
-      const tab = await getActiveTab();
-      const tabId = tab ? tab.id : 999999;
-
-      const base64 = message.base64Data;
-      const byteString = atob(base64);
-      const ab = new Uint8Array(byteString.length);
-      for (let i = 0; i < byteString.length; i++) {
-        ab[i] = byteString.charCodeAt(i);
-      }
-
-      const fileName = sanitizeFileName(message.fileName, '');
-      const mimeType = message.mimeType || 'application/octet-stream';
-      const fileBlob = new Blob([ab], { type: mimeType });
-
-      const uploadState = {
-        tabId,
-        phase: 'uploading',
-        percent: 0,
-        fileName,
-        mimeType,
-        url: 'file://imported',
-        sessionUrl: null,
-        bytesUploaded: 0,
-        totalSize: fileBlob.size,
-        controller: null,
-        uploadController: null,
-        link: null,
-        error: null,
-        startedAt: Date.now()
-      };
-      activeUploads[tabId] = uploadState;
-      await persistUploadState(uploadState);
-      notifyPopup('uploading', 0);
-
-      try {
-        let token = await getValidToken();
-        let folderId;
-        try {
-          folderId = await getOrCreateFolder(token);
-        } catch (err) {
-          if (err.message === 'RETRY_401') {
-            await browser.storage.local.remove(['accessToken', 'expiresAt']);
-            token = await getValidToken();
-            folderId = await getOrCreateFolder(token);
-          } else {
-            throw err;
-          }
-        }
-
-        const result = await uploadFileResumable(fileBlob, fileName, mimeType, token, folderId, tabId, uploadState);
-
-        uploadState.phase = 'success';
-        uploadState.link = result.webViewLink;
-        await persistUploadState(uploadState);
-        scheduleCleanup(tabId, uploadState);
-
-        const response = { success: true, fileName: result.name, link: result.webViewLink };
-        browser.runtime.sendMessage({
-          action: 'uploadComplete', ...response
-        }).catch(() => {});
-        return response;
-      } catch (e) {
-        const errorMsg = errorToI18nMessage(e);
-        uploadState.phase = 'error';
-        uploadState.error = errorMsg;
-        await persistUploadState(uploadState);
-        scheduleCleanup(tabId, uploadState);
-
-        const response = { success: false, error: errorMsg };
-        browser.runtime.sendMessage({
-          action: 'uploadComplete', ...response
-        }).catch(() => {});
-        return response;
-      }
     }
 
     // ----- CAPTURE DE PAGE WEB (Sprint 15) -----

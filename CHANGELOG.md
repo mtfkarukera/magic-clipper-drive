@@ -5,38 +5,13 @@ Tous les changements notables de Magic Clipper for Google Drive sont documentés
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
-## [1.22.0] — 2026-08-02
+## [1.23.0] — 2026-08-02
 
-### Ajouté
-- 📥 **Importation Manuelle de Fichiers (Drag & Drop & Onglet Dédié)** :
-  - **Zone de Glisser-Déposer (Drag & Drop)** : Intégration d'une zone de dépôt directement dans la popup pour importer et téléverser n'importe quel fichier local (PDF, image, audio, etc.) vers Google Drive sans restriction de sécurité navigateur.
-  - **Onglet d'Importation Dédié** : Bouton d'ouverture `popup.html?mode=import` permettant d'utiliser un sélecteur de fichier classique (`<input type="file">`) dans une page complète sans risquer la fermeture intempestive de la popup.
-  - **Pipeline `uploadImportedFile`** : Conversion base64/Blob transparente dans le background script avec raccordement au moteur d'upload résumable chunké.
-
-### Corrigé
-- 🐛 **Correction du badge de statut Auth ("Non connecté")** :
-  - Correction d'un comportement où toute erreur d'upload (ex: fichier restreint ou erreur réseau) faisait passer le badge au rouge "Non connecté". Le badge conserve désormais son état vert "Connecté" si la clé `accessToken` est toujours valide.
-- 🔒 **Contournement des restrictions Firefox sur les PDF locaux** :
-  - Reconstitution propre du flux d'importation pour contourner le blocage d'injection de scripts (`executeScript`) sur le lecteur PDF interne de Firefox (`resource://pdf.js/`).
-
-## [1.21.1] — 2026-08-02
-
-### Corrigé
-- 🐛 **Correction du gel de la popup UI (ReferenceError)** :
-  - Ajout de la déclaration manquante de `localFileBanner` dans `popup.js`, résolvant un crash JavaScript silencieux qui laissait l'interface bloquée sur "Analyse de l'onglet...".
-  - Sécurisation résiliente de `isAllowedFileSchemeAccess()` avec un timeout de 1 seconde dans le background script.
-  - Ajout d'un timeout de secours de 3 secondes sur `getTabStatus` dans la popup.
-
-## [1.21.0] — 2026-08-02
-
-### Ajouté
-- 📁 **Prise en charge des fichiers locaux (`file:///*`)** :
-  - Intégration de l'autorisation d'accès aux fichiers locaux dans `manifest.json` (`host_permissions`).
-  - Détection dynamique de la permission à chaud via l'API Firefox native `browser.extension.isAllowedFileSchemeAccess()`.
-  - **Bandeau Pédagogique UI** : Affichage d'un composant d'avertissement et d'instructions pas-à-pas dans la popup en cas de permission manquante dans `about:addons`.
-  - **Lien vers la documentation officielle Mozilla** : Intégration d'un lien direct vers `support.mozilla.org/kb/manage-optional-permissions-extensions` (`target="_blank" rel="noopener noreferrer"`).
-  - **Pipeline d'extraction sécurisé** : Extraction des octets bruts par le Content Script injecté dans l'onglet `file://` (qui tourne dans l'origine du fichier local), puis transmission sécurisée au Background script pour téléversement résumable vers Google Drive.
-  - Nouvelles clés d'internationalisation ajoutées dans les 6 locales (`en`, `fr`, `de`, `es`, `vi`, `gcf`).
+### Modifié / Amélioré
+- 💬 **Clarté UX & Communication sur la Sécurité Firefox** :
+  - Re-formulation didactique des messages d'avertissement lorsqu'un fichier local (`file://`) est détecté dans l'onglet actif.
+  - Explication explicite de la restriction de sécurité appliquée par le moteur Firefox pour éviter toute ambiguïté utilisateur.
+  - Déclinaison synchronisée dans l'ensemble des 6 langues supportées (`fr`, `en`, `de`, `es`, `vi`, `gcf`).
 
 ## [1.20.0] — 2026-08-01
 

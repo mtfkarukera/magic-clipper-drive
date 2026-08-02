@@ -34,22 +34,6 @@
     </div>
   </section>
 
-  <!-- BANNER PERMISSION FICHIERS LOCAUX -->
-  <section id="local-file-banner" class="local-file-banner hidden">
-    <div class="banner-card">
-      <div class="banner-header">
-        <span class="banner-icon" aria-hidden="true">🔒</span>
-        <h3 class="banner-title" data-i18n="popup_local_banner_title">Permission requise pour les fichiers locaux</h3>
-      </div>
-      <ol class="banner-steps">
-        <li data-i18n="popup_local_banner_step1">1. Ouvre about:addons</li>
-        <li data-i18n="popup_local_banner_step2">2. Sélectionne Magic Clipper</li>
-        <li data-i18n="popup_local_banner_step3">3. Active « Accéder aux fichiers locaux »</li>
-      </ol>
-      <a id="local-banner-link" class="banner-link" href="https://support.mozilla.org/kb/manage-optional-permissions-extensions" target="_blank" rel="noopener noreferrer" data-i18n="popup_local_banner_link">Consulter le guide officiel Mozilla ↗</a>
-    </div>
-  </section>
-
   <!-- ACTION PRINCIPALE — Upload fichier direct -->
   <section class="action-section" id="direct-upload-section">
     <button id="upload-btn" class="btn primary-btn" disabled>
@@ -61,24 +45,6 @@
     </div>
     <div id="drive-link-row" class="drive-link-row hidden">
       <a id="drive-link" href="#" target="_blank" rel="noopener noreferrer" data-i18n="popup_link_view"></a>
-    </div>
-  </section>
-
-  <!-- ACTION IMPORTATION MANUELLE (Drag & Drop / Input File) -->
-  <section class="action-section hidden" id="drop-zone-section">
-    <div id="drop-zone" class="drop-zone">
-      <span class="drop-icon" aria-hidden="true">📥</span>
-      <p class="drop-text" data-i18n="popup_drop_zone_text">Glissez-déposez le fichier ici pour l'envoyer</p>
-      <span class="drop-or" data-i18n="popup_drop_or">ou</span>
-      <label for="local-file-input" class="btn secondary-btn import-btn">
-        <span data-i18n="popup_btn_browse">Parcourir…</span>
-        <input type="file" id="local-file-input" class="sr-only" />
-      </label>
-    </div>
-    <div class="tab-import-row">
-      <button id="open-tab-import-btn" class="btn text-btn" data-i18n="popup_btn_open_tab_import">
-        Ouvrir l'importateur dans un nouvel onglet ↗
-      </button>
     </div>
   </section>
 

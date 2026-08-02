@@ -123,9 +123,12 @@ export function getFileNameFromUrl(url, title) {
     const parsed = new URL(url);
     const lastPart = parsed.pathname.split("/").pop();
     if (lastPart && lastPart.includes(".")) {
-      const decoded = decodeURIComponent(lastPart);
-      const sanitized = sanitize(decoded);
-      if (sanitized) return sanitized;
+      const ext = lastPart.split(".").pop().toLowerCase();
+      if (MIME_MAP[ext]) {
+        const decoded = decodeURIComponent(lastPart);
+        const sanitized = sanitize(decoded);
+        if (sanitized) return sanitized;
+      }
     }
   } catch (e) {
     // Invalid URL

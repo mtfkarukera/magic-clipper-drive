@@ -1,130 +1,39 @@
 {
-  "ext_name": {
-    "message": "Magic Clipper für Google Drive",
-    "description": "Extension name"
-  },
-  "ext_description": {
-    "message": "Senden Sie jede Datei, die Firefox anzeigen kann, mit einem Klick direkt an Ihr Google Drive.",
-    "description": "Extension description"
-  },
-  "popup_auth_loading": {
-    "message": "Verbindung wird hergestellt…",
-    "description": "Auth status: loading"
-  },
-  "popup_auth_connected": {
-    "message": "Verbunden",
-    "description": "Auth status: connected"
-  },
-  "popup_auth_error": {
-    "message": "Nicht verbunden",
-    "description": "Auth status: error"
-  },
-  "popup_detecting": {
-    "message": "Tab wird analysiert…",
-    "description": "Status when analyzing the current tab"
-  },
-  "popup_idle_label": {
-    "message": "DATEI ERKANNT",
-    "description": "Label above the detected file"
-  },
-  "popup_no_file": {
-    "message": "Keine Datei erkannt",
-    "description": "Message when no file is detected"
-  },
-  "popup_unsupported": {
-    "message": "Dieser Tab enthält keine unterstützte Datei",
-    "description": "Message when the file type is not supported"
-  },
-  "popup_local_file": {
-    "message": "Lokale Dateien werden nicht unterstützt",
-    "description": "Message when a local file is detected"
-  },
-  "popup_btn_upload": {
-    "message": "⬆️ An Google Drive senden",
-    "description": "Upload button text"
-  },
-  "popup_btn_uploading": {
-    "message": "Wird gesendet…",
-    "description": "Upload button text when sending"
-  },
-  "popup_btn_disconnect": {
-    "message": "Trennen",
-    "description": "Disconnect button text"
-  },
-  "popup_btn_disconnect_confirm": {
-    "message": "Trennung bestätigen",
-    "description": "Disconnect button confirmation state"
-  },
-  "popup_link_view": {
-    "message": "📂 In Google Drive ansehen",
-    "description": "Link to view the uploaded file"
-  },
+  "ext_name": { "message": "Magic Clipper für Google Drive", "description": "Extension name" },
+  "ext_description": { "message": "Senden Sie jede Datei, die Firefox anzeigen kann, mit einem Klick direkt an Ihr Google Drive.", "description": "Extension description" },
+  "popup_auth_loading": { "message": "Verbindung wird hergestellt…", "description": "Auth status: loading" },
+  "popup_auth_connected": { "message": "Verbunden", "description": "Auth status: connected" },
+  "popup_auth_error": { "message": "Nicht verbunden", "description": "Auth status: error" },
+  "popup_detecting": { "message": "Tab wird analysiert…", "description": "Status when analyzing the current tab" },
+  "popup_idle_label": { "message": "DATEI ERKANNT", "description": "Label above the detected file" },
+  "popup_no_file": { "message": "Keine Datei erkannt", "description": "Message when no file is detected" },
+  "popup_unsupported": { "message": "Dieser Tab enthält keine unterstützte Datei", "description": "Message when the file type is not supported" },
+  "popup_local_file": { "message": "Lokaler Dateizugriff durch Firefox eingeschränkt", "description": "Message when a local file is detected" },
+  "popup_btn_upload": { "message": "⬆️ An Google Drive senden", "description": "Upload button text" },
+  "popup_btn_uploading": { "message": "Wird gesendet…", "description": "Upload button text when sending" },
+  "popup_btn_disconnect": { "message": "Trennen", "description": "Disconnect button text" },
+  "popup_btn_disconnect_confirm": { "message": "Trennung bestätigen", "description": "Disconnect button confirmation state" },
+  "popup_link_view": { "message": "📂 In Google Drive ansehen", "description": "Link to view the uploaded file" },
   "popup_success": {
     "message": "$FILE_NAME$ gesendet!",
     "description": "Erfolgsmeldung mit Dateiname",
     "placeholders": {
-      "file_name": {
-        "content": "$1"
-      }
+      "file_name": { "content": "$1" }
     }
   },
-  "err_local_file": {
-    "message": "Lokale Dateien werden nicht unterstützt. Öffnen Sie die Datei über eine Online-URL.",
-    "description": "Error: local file"
-  },
-  "err_local_file_permission_needed": {
-    "message": "Der Zugriff auf lokale Dateien erfordert Ihre Berechtigung in den Einstellungen.",
-    "description": "Error: local file permission needed"
-  },
-  "popup_local_banner_title": {
-    "message": "Berechtigung für lokale Dateien erforderlich",
-    "description": "Local banner title"
-  },
-  "popup_local_banner_step1": {
-    "message": "1. Öffnen Sie about:addons in einem neuen Tab",
-    "description": "Local banner step 1"
-  },
-  "popup_local_banner_step2": {
-    "message": "2. Wählen Sie Magic Clipper for Google Drive",
-    "description": "Local banner step 2"
-  },
-  "popup_local_banner_step3": {
-    "message": "3. Aktivieren Sie unter Berechtigungen 'Auf lokale Dateien zugreifen'",
-    "description": "Local banner step 3"
-  },
-  "popup_local_banner_link": {
-    "message": "Offiziellen Mozilla-Leitfaden konsultieren ↗",
-    "description": "Local banner official guide link"
-  },
-  "err_unsupported_type": {
-    "message": "Nicht unterstützter Dateityp.",
-    "description": "Error: unsupported file type"
-  },
-  "err_quota": {
-    "message": "Unzureichender Google Drive-Speicherplatz.",
-    "description": "Error: out of quota"
-  },
+  "err_local_file": { "message": "Aus Sicherheitsgründen beschränkt Firefox den direkten Zugriff auf lokale Dateien. Nur Online-Dateien können erfasst werden.", "description": "Error: local file" },
+  "err_unsupported_type": { "message": "Nicht unterstützter Dateityp.", "description": "Error: unsupported file type" },
+  "err_quota": { "message": "Unzureichender Google Drive-Speicherplatz.", "description": "Error: out of quota" },
   "err_download_failed": {
     "message": "Datei konnte nicht heruntergeladen werden (HTTP $STATUS$).",
     "description": "Fehler beim Herunterladen mit HTTP-Statuscode",
     "placeholders": {
-      "status": {
-        "content": "$1"
-      }
+      "status": { "content": "$1" }
     }
   },
-  "err_auth_failed": {
-    "message": "Google-Authentifizierung fehlgeschlagen.",
-    "description": "Error: authentication failed"
-  },
-  "err_network": {
-    "message": "Netzwerkfehler. Überprüfen Sie Ihre Internetverbindung.",
-    "description": "Error: network issue"
-  },
-  "err_upload_failed": {
-    "message": "Upload fehlgeschlagen. Bitte versuchen Sie es erneut.",
-    "description": "Error: upload failed"
-  },
+  "err_auth_failed": { "message": "Google-Authentifizierung fehlgeschlagen.", "description": "Error: authentication failed" },
+  "err_network": { "message": "Netzwerkfehler. Überprüfen Sie Ihre Internetverbindung.", "description": "Error: network issue" },
+  "err_upload_failed": { "message": "Upload fehlgeschlagen. Bitte versuchen Sie es erneut.", "description": "Error: upload failed" },
   "lang_select_label": {
     "message": "Sprache"
   },
@@ -172,48 +81,32 @@
     "message": "Herunterladen… ($PERCENT$%)",
     "description": "Progress state: downloading from web",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      }
+      "percent": { "content": "$1" }
     }
   },
   "popup_state_downloading_eta": {
     "message": "Wird heruntergeladen… ($PERCENT$%) — noch $ETA$ ($SPEED$)",
     "description": "Progress state with ETA: downloading from web",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      },
-      "eta": {
-        "content": "$2"
-      },
-      "speed": {
-        "content": "$3"
-      }
+      "percent": { "content": "$1" },
+      "eta": { "content": "$2" },
+      "speed": { "content": "$3" }
     }
   },
   "popup_state_uploading": {
     "message": "Wird an Drive gesendet… ($PERCENT$%)",
     "description": "Progress state: uploading to Drive",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      }
+      "percent": { "content": "$1" }
     }
   },
   "popup_state_uploading_eta": {
     "message": "Wird an Drive gesendet… ($PERCENT$%) — noch $ETA$ ($SPEED$)",
     "description": "Progress state with ETA: uploading to Drive",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      },
-      "eta": {
-        "content": "$2"
-      },
-      "speed": {
-        "content": "$3"
-      }
+      "percent": { "content": "$1" },
+      "eta": { "content": "$2" },
+      "speed": { "content": "$3" }
     }
   },
   "popup_state_action_cancel_announce": {
@@ -295,25 +188,5 @@
   "err_restricted_page": {
     "message": "Diese Seite ist eingeschränkt. Du kannst den Zugriff in den Erweiterungseinstellungen (about:addons) erlauben.",
     "description": "Error when content script injection fails on a restricted page"
-  },
-  "popup_drop_zone_title": {
-    "message": "Local File Import",
-    "description": "Title for drop zone section"
-  },
-  "popup_drop_zone_text": {
-    "message": "Drag and drop the file here to upload",
-    "description": "Text in drop zone"
-  },
-  "popup_drop_or": {
-    "message": "or",
-    "description": "Separator in drop zone"
-  },
-  "popup_btn_browse": {
-    "message": "Browse…",
-    "description": "Browse button text"
-  },
-  "popup_btn_open_tab_import": {
-    "message": "Open importer in new tab ↗",
-    "description": "Open full page importer button text"
   }
 }

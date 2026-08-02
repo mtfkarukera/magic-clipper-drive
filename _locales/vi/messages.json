@@ -1,130 +1,39 @@
 {
-  "ext_name": {
-    "message": "Magic Clipper cho Google Drive",
-    "description": "Extension name"
-  },
-  "ext_description": {
-    "message": "Gửi bất kỳ tệp nào Firefox có thể hiển thị trực tiếp vào Google Drive của bạn chỉ bằng một cú nhấp chuột.",
-    "description": "Extension description"
-  },
-  "popup_auth_loading": {
-    "message": "Đang kết nối…",
-    "description": "Auth status: loading"
-  },
-  "popup_auth_connected": {
-    "message": "Đã kết nối",
-    "description": "Auth status: connected"
-  },
-  "popup_auth_error": {
-    "message": "Chưa kết nối",
-    "description": "Auth status: error"
-  },
-  "popup_detecting": {
-    "message": "Đang phân tích thẻ…",
-    "description": "Status when analyzing the current tab"
-  },
-  "popup_idle_label": {
-    "message": "ĐÃ PHÁT HIỆN TỆP",
-    "description": "Label above the detected file"
-  },
-  "popup_no_file": {
-    "message": "Không phát hiện tệp nào",
-    "description": "Message when no file is detected"
-  },
-  "popup_unsupported": {
-    "message": "Thẻ này không chứa tệp được hỗ trợ",
-    "description": "Message when the file type is not supported"
-  },
-  "popup_local_file": {
-    "message": "Tệp cục bộ không được hỗ trợ",
-    "description": "Message when a local file is detected"
-  },
-  "popup_btn_upload": {
-    "message": "⬆️ Gửi lên Google Drive",
-    "description": "Upload button text"
-  },
-  "popup_btn_uploading": {
-    "message": "Đang gửi…",
-    "description": "Upload button text when sending"
-  },
-  "popup_btn_disconnect": {
-    "message": "Ngắt kết nối",
-    "description": "Disconnect button text"
-  },
-  "popup_btn_disconnect_confirm": {
-    "message": "Xác nhận ngắt kết nối",
-    "description": "Disconnect button confirmation state"
-  },
-  "popup_link_view": {
-    "message": "📂 Xem trong Google Drive",
-    "description": "Link to view the uploaded file"
-  },
+  "ext_name": { "message": "Magic Clipper cho Google Drive", "description": "Extension name" },
+  "ext_description": { "message": "Gửi bất kỳ tệp nào Firefox có thể hiển thị trực tiếp vào Google Drive của bạn chỉ bằng một cú nhấp chuột.", "description": "Extension description" },
+  "popup_auth_loading": { "message": "Đang kết nối…", "description": "Auth status: loading" },
+  "popup_auth_connected": { "message": "Đã kết nối", "description": "Auth status: connected" },
+  "popup_auth_error": { "message": "Chưa kết nối", "description": "Auth status: error" },
+  "popup_detecting": { "message": "Đang phân tích thẻ…", "description": "Status when analyzing the current tab" },
+  "popup_idle_label": { "message": "ĐÃ PHÁT HIỆN TỆP", "description": "Label above the detected file" },
+  "popup_no_file": { "message": "Không phát hiện tệp nào", "description": "Message when no file is detected" },
+  "popup_unsupported": { "message": "Thẻ này không chứa tệp được hỗ trợ", "description": "Message when the file type is not supported" },
+  "popup_local_file": { "message": "Quyền truy cập tệp cục bộ bị giới hạn bởi Firefox", "description": "Message when a local file is detected" },
+  "popup_btn_upload": { "message": "⬆️ Gửi lên Google Drive", "description": "Upload button text" },
+  "popup_btn_uploading": { "message": "Đang gửi…", "description": "Upload button text when sending" },
+  "popup_btn_disconnect": { "message": "Ngắt kết nối", "description": "Disconnect button text" },
+  "popup_btn_disconnect_confirm": { "message": "Xác nhận ngắt kết nối", "description": "Disconnect button confirmation state" },
+  "popup_link_view": { "message": "📂 Xem trong Google Drive", "description": "Link to view the uploaded file" },
   "popup_success": {
     "message": "Đã gửi $FILE_NAME$!",
     "description": "Thông báo thành công với tên tệp",
     "placeholders": {
-      "file_name": {
-        "content": "$1"
-      }
+      "file_name": { "content": "$1" }
     }
   },
-  "err_local_file": {
-    "message": "Tệp cục bộ không được hỗ trợ. Mở tệp từ một URL trực tuyến.",
-    "description": "Error: local file"
-  },
-  "err_local_file_permission_needed": {
-    "message": "Truy cập các tệp cục bộ yêu cầu sự cho phép của bạn trong cài đặt tiện ích mở rộng.",
-    "description": "Error: local file permission needed"
-  },
-  "popup_local_banner_title": {
-    "message": "Yêu cầu quyền đối với các tệp cục bộ",
-    "description": "Local banner title"
-  },
-  "popup_local_banner_step1": {
-    "message": "1. Mở about:addons trong một thẻ mới",
-    "description": "Local banner step 1"
-  },
-  "popup_local_banner_step2": {
-    "message": "2. Chọn Magic Clipper for Google Drive",
-    "description": "Local banner step 2"
-  },
-  "popup_local_banner_step3": {
-    "message": "3. Trong thẻ Quyền, bật 'Truy cập các tệp cục bộ'",
-    "description": "Local banner step 3"
-  },
-  "popup_local_banner_link": {
-    "message": "Tham khảo hướng dẫn chính thức của Mozilla ↗",
-    "description": "Local banner official guide link"
-  },
-  "err_unsupported_type": {
-    "message": "Loại tệp không được hỗ trợ.",
-    "description": "Error: unsupported file type"
-  },
-  "err_quota": {
-    "message": "Không đủ không gian lưu trữ Google Drive.",
-    "description": "Error: out of quota"
-  },
+  "err_local_file": { "message": "Vì lý do bảo mật, Firefox hạn chế truy cập trực tiếp vào tệp cục bộ. Chỉ có thể thu thập các tệp trực tuyến.", "description": "Error: local file" },
+  "err_unsupported_type": { "message": "Loại tệp không được hỗ trợ.", "description": "Error: unsupported file type" },
+  "err_quota": { "message": "Không đủ không gian lưu trữ Google Drive.", "description": "Error: out of quota" },
   "err_download_failed": {
     "message": "Không thể tải tệp xuống (HTTP $STATUS$).",
     "description": "Lỗi tải xuống với mã HTTP",
     "placeholders": {
-      "status": {
-        "content": "$1"
-      }
+      "status": { "content": "$1" }
     }
   },
-  "err_auth_failed": {
-    "message": "Xác thực Google không thành công.",
-    "description": "Error: authentication failed"
-  },
-  "err_network": {
-    "message": "Lỗi mạng. Kiểm tra kết nối internet của bạn.",
-    "description": "Error: network issue"
-  },
-  "err_upload_failed": {
-    "message": "Tải lên không thành công. Vui lòng thử lại.",
-    "description": "Error: upload failed"
-  },
+  "err_auth_failed": { "message": "Xác thực Google không thành công.", "description": "Error: authentication failed" },
+  "err_network": { "message": "Lỗi mạng. Kiểm tra kết nối internet của bạn.", "description": "Error: network issue" },
+  "err_upload_failed": { "message": "Tải lên không thành công. Vui lòng thử lại.", "description": "Error: upload failed" },
   "lang_select_label": {
     "message": "Ngôn ngữ"
   },
@@ -172,48 +81,32 @@
     "message": "Đang tải xuống… ($PERCENT$%)",
     "description": "Progress state: downloading from web",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      }
+      "percent": { "content": "$1" }
     }
   },
   "popup_state_downloading_eta": {
     "message": "Đang tải xuống… ($PERCENT$%) — còn lại $ETA$ ($SPEED$)",
     "description": "Progress state with ETA: downloading from web",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      },
-      "eta": {
-        "content": "$2"
-      },
-      "speed": {
-        "content": "$3"
-      }
+      "percent": { "content": "$1" },
+      "eta": { "content": "$2" },
+      "speed": { "content": "$3" }
     }
   },
   "popup_state_uploading": {
     "message": "Đang gửi lên Drive… ($PERCENT$%)",
     "description": "Progress state: uploading to Drive",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      }
+      "percent": { "content": "$1" }
     }
   },
   "popup_state_uploading_eta": {
     "message": "Đang gửi lên Drive… ($PERCENT$%) — còn lại $ETA$ ($SPEED$)",
     "description": "Progress state with ETA: uploading to Drive",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      },
-      "eta": {
-        "content": "$2"
-      },
-      "speed": {
-        "content": "$3"
-      }
+      "percent": { "content": "$1" },
+      "eta": { "content": "$2" },
+      "speed": { "content": "$3" }
     }
   },
   "popup_state_action_cancel_announce": {
@@ -276,6 +169,22 @@
     "message": "Đang chụp trang…",
     "description": "Status during page capture"
   },
+  "popup_btn_capture_pdf_clean": {
+    "message": "PDF Gọn gàng",
+    "description": "Button label for Clean PDF capture"
+  },
+  "popup_desc_capture_pdf_clean": {
+    "message": "Nội dung sạch không quảng cáo",
+    "description": "Description for Clean PDF capture"
+  },
+  "popup_btn_capture_pdf_native": {
+    "message": "PDF In (Gốc)",
+    "description": "Button label for Native 1:1 Firefox Print PDF capture"
+  },
+  "popup_desc_capture_pdf_native": {
+    "message": "Xuất hình ảnh 1:1 Firefox",
+    "description": "Description for Native 1:1 Firefox Print PDF capture"
+  },
   "popup_btn_capture_md": {
     "message": "Markdown",
     "description": "Button label for Markdown capture"
@@ -287,33 +196,5 @@
   "err_restricted_page": {
     "message": "Trang này bị hạn chế. Bạn có thể cho phép truy cập trong cài đặt tiện ích (about:addons).",
     "description": "Error when content script injection fails on a restricted page"
-  },
-  "popup_drop_zone_title": {
-    "message": "Local File Import",
-    "description": "Title for drop zone section"
-  },
-  "popup_drop_zone_text": {
-    "message": "Drag and drop the file here to upload",
-    "description": "Text in drop zone"
-  },
-  "popup_drop_or": {
-    "message": "or",
-    "description": "Separator in drop zone"
-  },
-  "popup_btn_browse": {
-    "message": "Browse…",
-    "description": "Browse button text"
-  },
-  "popup_btn_open_tab_import": {
-    "message": "Open importer in new tab ↗",
-    "description": "Open full page importer button text"
-  },
-  "popup_btn_capture_pdf": {
-    "message": "PDF Document",
-    "description": "Button label for PDF capture"
-  },
-  "popup_desc_capture_pdf": {
-    "message": "Clean layout & images",
-    "description": "Description for PDF capture"
   }
 }

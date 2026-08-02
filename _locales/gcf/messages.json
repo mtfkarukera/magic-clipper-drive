@@ -18,7 +18,7 @@
     "message": "Paj-lasa pa ni pon fichyé nou pé voyé"
   },
   "popup_local_file": {
-    "message": "Nou pa ka pwan pyès ki anlè owdinatè a'w menm"
+    "message": "Firefox ka bare aksè sé fichyé lokal la"
   },
   "popup_btn_upload": {
     "message": "⬆️ Voyé pyès-la adan Google Drive"
@@ -29,9 +29,7 @@
   "popup_success": {
     "message": "$FILE_NAME$ pati !",
     "placeholders": {
-      "file_name": {
-        "content": "$1"
-      }
+      "file_name": { "content": "$1" }
     }
   },
   "popup_link_view": {
@@ -50,25 +48,7 @@
     "message": "I pa lyanné"
   },
   "err_local_file": {
-    "message": "Nou pa ka sipòté pyès ki anlè owdinatè a'w menm. Wouvè fichyé-la depi on URL asi entènèt."
-  },
-  "err_local_file_permission_needed": {
-    "message": "Akse adan fichye lokal ka mandé otorizasyon aw adan réglaj estansyon la."
-  },
-  "popup_local_banner_title": {
-    "message": "Otorizasyon mandé pou fichye lokal"
-  },
-  "popup_local_banner_step1": {
-    "message": "1. Ouvè about:addons adan yon nouvo onglet"
-  },
-  "popup_local_banner_step2": {
-    "message": "2. Chwazi Magic Clipper for Google Drive"
-  },
-  "popup_local_banner_step3": {
-    "message": "3. Adan Otorizasyon, me't 'Akse adan fichye lokal' an mach"
-  },
-  "popup_local_banner_link": {
-    "message": "Gidé ofisyel Mozilla la ↗"
+    "message": "Pou sekirité, Firefox pa ka kité nou pran fichyé ki anlè owdinatè a'w menm. Sé yenki fichyé anlè entènèt nou pé pran."
   },
   "err_unsupported_type": {
     "message": "Nou pa ka pwan sé kalité pyès-la sa."
@@ -76,9 +56,7 @@
   "err_download_failed": {
     "message": "Nou pa rivé chajé pyès-la sa : (HTTP $STATUS$).",
     "placeholders": {
-      "status": {
-        "content": "$1"
-      }
+      "status": { "content": "$1" }
     }
   },
   "err_auth_failed": {
@@ -132,45 +110,29 @@
   "popup_state_downloading": {
     "message": "An ka chajé fichyé-la… ($PERCENT$%)",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      }
+      "percent": { "content": "$1" }
     }
   },
   "popup_state_downloading_eta": {
     "message": "An ka chajé fichyé-la… ($PERCENT$%) — i ka rété $ETA$ ($SPEED$)",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      },
-      "eta": {
-        "content": "$2"
-      },
-      "speed": {
-        "content": "$3"
-      }
+      "percent": { "content": "$1" },
+      "eta": { "content": "$2" },
+      "speed": { "content": "$3" }
     }
   },
   "popup_state_uploading": {
     "message": "Fichyé-la ka pati an Drive… ($PERCENT$%)",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      }
+      "percent": { "content": "$1" }
     }
   },
   "popup_state_uploading_eta": {
     "message": "Fichyé-la ka pati an Drive… ($PERCENT$%) — i ka rété $ETA$ ($SPEED$)",
     "placeholders": {
-      "percent": {
-        "content": "$1"
-      },
-      "eta": {
-        "content": "$2"
-      },
-      "speed": {
-        "content": "$3"
-      }
+      "percent": { "content": "$1" },
+      "eta": { "content": "$2" },
+      "speed": { "content": "$3" }
     }
   },
   "popup_state_action_cancel_announce": {
@@ -227,6 +189,22 @@
     "message": "Ka kaptiré…",
     "description": "Status during page capture"
   },
+  "popup_btn_capture_pdf_clean": {
+    "message": "PDF Pwòp",
+    "description": "Button label for Clean PDF capture"
+  },
+  "popup_desc_capture_pdf_clean": {
+    "message": "Kontni netwayé san piblisite",
+    "description": "Description for Clean PDF capture"
+  },
+  "popup_btn_capture_pdf_native": {
+    "message": "PDF Enpresyon (Natif)",
+    "description": "Button label for Native 1:1 Firefox Print PDF capture"
+  },
+  "popup_desc_capture_pdf_native": {
+    "message": "Menm miz an paj 1:1 Firefox",
+    "description": "Description for Native 1:1 Firefox Print PDF capture"
+  },
   "popup_btn_capture_md": {
     "message": "Markdown",
     "description": "Button label for Markdown capture"
@@ -238,33 +216,5 @@
   "err_restricted_page": {
     "message": "Paj-la rèstren. Ou pé otorizé aksè andidàn paramèt extension-la (about:addons).",
     "description": "Error when content script injection fails on a restricted page"
-  },
-  "popup_drop_zone_title": {
-    "message": "Local File Import",
-    "description": "Title for drop zone section"
-  },
-  "popup_drop_zone_text": {
-    "message": "Drag and drop the file here to upload",
-    "description": "Text in drop zone"
-  },
-  "popup_drop_or": {
-    "message": "or",
-    "description": "Separator in drop zone"
-  },
-  "popup_btn_browse": {
-    "message": "Browse…",
-    "description": "Browse button text"
-  },
-  "popup_btn_open_tab_import": {
-    "message": "Open importer in new tab ↗",
-    "description": "Open full page importer button text"
-  },
-  "popup_btn_capture_pdf": {
-    "message": "PDF Document",
-    "description": "Button label for PDF capture"
-  },
-  "popup_desc_capture_pdf": {
-    "message": "Clean layout & images",
-    "description": "Description for PDF capture"
   }
 }
